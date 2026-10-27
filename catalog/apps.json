@@ -359,16 +359,19 @@
     "@microsoft.com"
    ],
    "desc": {
-    "pl": "Starsze biblioteki DirectX (d3dx9, XAudio, XInput) potrzebne wielu grom.",
-    "en": "Legacy DirectX libraries (d3dx9, XAudio, XInput) needed by many games."
+    "pl": "Starsze biblioteki DirectX (d3dx9, XAudio, XInput) potrzebne wielu grom. Pełny pakiet offline, instalacja cicha.",
+    "en": "Legacy DirectX libraries (d3dx9, XAudio, XInput) needed by many games. Full offline package, silent install."
    },
    "detect": "",
    "sources": [
     {
      "type": "url",
-     "url": "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe",
-     "fileName": "dxwebsetup.exe",
-     "args": "/Q",
+     "url": "https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe",
+     "fileName": "directx_Jun2010_redist.exe",
+     "installer": "extract",
+     "extractArgs": "/Q /C /T:\"{dir}\"",
+     "run": "DXSETUP.exe",
+     "args": "/silent",
      "signer": "Microsoft Corporation"
     },
     {
@@ -675,10 +678,10 @@
    "detect": "^JOPDF",
    "sources": [
     {
-     "type": "ps",
-     "fileName": "jopdf-setup.exe",
-     "script": "$h=(Invoke-WebRequest 'https://www.jopdf.com/' -UseBasicParsing); $l=$h.Links | ForEach-Object { $_.href } | Where-Object { $_ -match '\\.exe($|\\?)' } | Select-Object -First 1; if(-not $l){ exit 1 }; if($l -notmatch '^https?://'){ $l=[Uri]::new([Uri]'https://www.jopdf.com/', $l).AbsoluteUri }; $l",
-     "args": "/S"
+     "type": "url",
+     "url": "https://cdn.jopdf.com/download/jopdf/jopdf-win-x64_setup.exe",
+     "fileName": "jopdf-win-x64_setup.exe",
+     "args": "auto"
     }
    ]
   },

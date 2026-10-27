@@ -98,7 +98,10 @@ Typy źródeł:
 
 Dla `winget`: `"asUser": true` = instalacja dla zalogowanego użytkownika bez uprawnień administratora.
 
-Wspólne dla źródeł bezpośrednich: `args`, `installer` (`exe`/`msi`), `signer` (wymagany podpis Authenticode z tym wydawcą), `okCodes`.
+Wspólne dla źródeł bezpośrednich: `args`, `installer` (`exe`/`msi`/`extract`), `signer` (wymagany podpis Authenticode z tym wydawcą), `okCodes`.
+
+- `"args": "auto"` — program rozpoznaje typ instalatora (Inno Setup, NSIS, WiX Burn, Squirrel, Advanced Installer, InstallShield) i sam dobiera cichy przełącznik; nieznany typ = przejście do następnego źródła, bez otwierania kreatora.
+- `"installer": "extract"` — samorozpakowujące archiwum: najpierw plik z `extractArgs` (`{dir}` = folder docelowy), potem `run` z `args`. Tak działa DirectX offline: `/Q /C /T:"{dir}"` → `DXSETUP.exe /silent`.
 
 `icon`: `@domena` (usługa ikon z `iconService`), pełny URL lub ścieżka względna do strony (np. `icons/app.png` z katalogu `catalog/icons`).
 

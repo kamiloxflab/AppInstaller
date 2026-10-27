@@ -134,8 +134,13 @@ namespace AppInstaller.Core
         [DataMember(Name = "asUser")] public bool AsUser { get; set; }
 
         // wspólne dla źródeł bezpośrednich
-        /// <summary>exe | msi (domyślnie z rozszerzenia pliku).</summary>
+        /// <summary>
+        /// exe | msi (domyślnie z rozszerzenia pliku) | extract — samorozpakowujące archiwum:
+        /// najpierw plik z "extractArgs" ({dir} = folder docelowy), potem "run" (plik w tym folderze) z "args".
+        /// </summary>
         [DataMember(Name = "installer")] public string Installer { get; set; }
+        [DataMember(Name = "extractArgs")] public string ExtractArgs { get; set; }
+        [DataMember(Name = "run")] public string Run { get; set; }
         [DataMember(Name = "args")] public string Args { get; set; }
         [DataMember(Name = "fileName")] public string FileName { get; set; }
         /// <summary>Jeśli ustawione — wymagany ważny podpis Authenticode, a Subject certyfikatu musi zawierać ten tekst.</summary>

@@ -272,7 +272,21 @@ namespace AppInstaller.Core
         {
             bool msi = s.Installer == "msi" || (s.Installer == null && file.EndsWith(".msi", StringComparison.OrdinalIgnoreCase));
             ProcResult r;
-            if (msi)
+            if (s.Installer == "extract")
+            {
+                // np. DirectX: directx_Jun2010_redist.exe /Q /C /T:"<dir>"  →  <dir>\DXSETUP.exe /silent
+                if (string.IsNullOrEmpty(s.Run) || s.Run.Contains("..") || Path.IsPathRooted(s.Run))
+                    throw new Exception("Invalid 'run' for extract installer");
+                var dir = Path.Combine(Path.GetDirectoryName(file), "extracted");
+                if (Directory.Exists(dir)) Directory.Delete(dir, true);
+                Directory.CreateDirectory(dir);
+                var x = await Proc.RunAsync(file, (s.ExtractArgs ?? "").Replace("{dir}", dir), ct, TimeSpan.FromMinutes(10), capture: false).ConfigureAwait(false);
+                var setup = Path.Combine(dir, s.Run);
+                if (!File.Exists(setup))
+                    throw new Exception("Extraction failed (exit " + x.ExitCode + "): " + s.Run + " not found");
+                r = await Proc.RunAsync(setup, s.Args ?? "", ct, capture: false).ConfigureAwait(false);
+            }
+            else if (msi)
             {
                 var log = Path.Combine(Path.GetDirectoryName(file), "msi.log");
                 r = await Proc.RunAsync(Path.Combine(Environment.SystemDirectory, "msiexec.exe"),
@@ -280,7 +294,17 @@ namespace AppInstaller.Core
             }
             else
             {
-                r = await Proc.RunAsync(file, s.Args ?? "", ct, capture: false).ConfigureAwait(false);
+                var args = s.Args ?? "";
+                if (args.Trim().StartsWith("auto", StringComparison.OrdinalIgnoreCase))
+                {
+                    // "auto" lub "auto <dodatkowe argumenty>" — rozpoznaj instalator, nie zgaduj w ciemno
+                    var det = InstallerDetect.Detect(file);
+                    if (det == null)
+                        throw new Exception("Unknown installer type — no safe silent switch (set 'args' in the catalog)");
+                    args = det.Args + args.Trim().Substring(4);
+                    Log.Info(Path.GetFileName(file) + ": detected " + det.Kind + " → " + args);
+                }
+                r = await Proc.RunAsync(file, args, ct, capture: false).ConfigureAwait(false);
             }
             return r.ExitCode;
         }
