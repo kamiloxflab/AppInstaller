@@ -274,7 +274,21 @@ select.mode { height: 32px; border-radius: var(--r-control); border: 1px solid v
   const loc = d => !d ? "" : (d[lang] || d.en || d.pl || Object.values(d)[0] || "");
   const t = k => T[lang][k];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-  const iconUrl = a => !a.icon ? null : a.icon[0] === "@" ? cat.iconService.replace("{0}", a.icon.slice(1)) : a.icon;
+  // Ikona: własna z repo (icons/<id>.png), potem wpisy "icons" (URL lub "@domena"), na końcu monogram
+  const iconUrls = a => {
+    const list = demo ? [] : [`icons/${a.id}.png`];
+    for (const e of [...(a.icons || []), ...(a.icon ? [a.icon] : [])]) {
+      if (!e) continue;
+      list.push(e[0] === "@" ? cat.iconService.replace("{0}", e.slice(1)) : e);
+    }
+    return [...new Set(list)];
+  };
+  window.__nextIcon = img => {
+    const rest = (img.dataset.next || "").split("|").filter(Boolean);
+    if (!rest.length) { img.remove(); return; }
+    img.dataset.next = rest.slice(1).join("|");
+    img.src = rest[0];
+  };
   const isCore = a => cat.core.includes(a.id);
   const sources = a => [...new Set(a.sources.map(s => ["winget", "choco"].includes(s.type) ? s.type : "direct"))];
 
@@ -295,10 +309,10 @@ select.mode { height: 32px; border-radius: var(--r-control); border: 1px solid v
   }
 
   function card(a) {
-    const core = isCore(a), on = core || sel.has(a.id), u = iconUrl(a);
+    const core = isCore(a), on = core || sel.has(a.id), urls = iconUrls(a), u = urls[0];
     const mono = esc((a.name.replace(/^\./, "")[0] || "?").toUpperCase());
     return `<button type="button" class="card${core ? " core" : ""}" role="checkbox" aria-checked="${on}" ${core ? 'aria-disabled="true"' : ""} data-id="${esc(a.id)}">
-      <span class="ico" style="background:${palette[Math.abs(hash(a.id)) % palette.length]}">${mono}${u ? `<img alt="" loading="lazy" src="${esc(u)}" onerror="this.remove()">` : ""}</span>
+      <span class="ico" style="background:${palette[Math.abs(hash(a.id)) % palette.length]}">${mono}${u ? `<img alt="" loading="lazy" src="${esc(u)}" data-next="${esc(urls.slice(1).join("|"))}" onerror="__nextIcon(this)">` : ""}</span>
       <span class="meta"><b>${esc(a.name)}</b><p>${esc(loc(a.desc))}</p>
         <span class="src">${sources(a).map(s => `<span>${s}</span>`).join("")}</span></span>
       ${core ? `<span class="lock"><svg viewBox="0 0 16 16"><path d="M8 1a3.5 3.5 0 0 1 3.5 3.5V6H12a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h.5V4.5A3.5 3.5 0 0 1 8 1zm0 1.5a2 2 0 0 0-2 2V6h4V4.5a2 2 0 0 0-2-2z"/></svg></span>`

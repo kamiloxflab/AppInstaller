@@ -293,7 +293,15 @@ namespace AppInstaller.Core
             var args = "install --id " + Proc.Quote(s.Id) + " --exact --source winget --silent --disable-interactivity" +
                        " --accept-package-agreements --accept-source-agreements" +
                        (s.Arch != null ? " --architecture " + s.Arch : "") +
+                       (s.AsUser ? " --scope user" : "") +
                        (s.Extra != null ? " " + s.Extra : "");
+            if (s.AsUser)
+            {
+                // instalator odmawia pracy jako administrator — uruchom jako zalogowany użytkownik
+                item.Status = Loc.T("St_InstallingUser");
+                Log.Info(item.App.Id + ": winget as user " + args);
+                return await Proc.RunAsUserAsync(winget, args, ct).ConfigureAwait(false);
+            }
             var r = await Proc.RunAsync(winget, args, ct, onLine: l => { if (Printable(l)) Log.Info("  winget│ " + l.Trim()); }).ConfigureAwait(false);
             return r.ExitCode;
         }

@@ -14,13 +14,13 @@ namespace AppInstaller.UI
     {
         public AppDef App { get; private set; }
         public bool IsCore { get; private set; }
-        public string IconUrl { get; private set; }
+        public System.Collections.Generic.IList<string> IconUrls { get; private set; }
 
-        public AppItem(AppDef app, bool isCore, string iconUrl)
+        public AppItem(AppDef app, bool isCore, System.Collections.Generic.IList<string> iconUrls)
         {
             App = app;
             IsCore = isCore;
-            IconUrl = iconUrl;
+            IconUrls = iconUrls;
             _checked = isCore;
             Loc.Changed += () => On("Description");
         }
@@ -65,19 +65,27 @@ namespace AppInstaller.UI
     {
         static string Dir { get { return Config.Ensure(Path.Combine(Config.UserDir, "icons")); } }
 
-        public static async Task<ImageSource> GetAsync(string id, string url)
+        /// <summary>Próbuje kolejne adresy; zapamiętuje pierwszy działający obraz.</summary>
+        public static async Task<ImageSource> GetAsync(string id, System.Collections.Generic.IList<string> urls)
         {
-            if (string.IsNullOrEmpty(url)) return null;
-            var file = Path.Combine(Dir, Net.SafeFileName(id) + ".img");
-            try
+            if (urls == null || urls.Count == 0) return null;
+            // klucz zależy od listy adresów: zmiana ikony w katalogu = nowe pobranie
+            var key = (uint)string.Join("|", urls).Aggregate(17, (h, c) => h * 31 + c);
+            var file = Path.Combine(Dir, Net.SafeFileName(id) + "-" + key.ToString("x8") + ".img");
+            if (!File.Exists(file) || File.GetLastWriteTimeUtc(file) < DateTime.UtcNow.AddDays(-30))
             {
-                if (!File.Exists(file) || File.GetLastWriteTimeUtc(file) < DateTime.UtcNow.AddDays(-30))
+                foreach (var url in urls)
                 {
-                    var bytes = await Net.GetBytesAsync(url, System.Threading.CancellationToken.None, 15);
-                    if (bytes.Length > 0 && bytes.Length < 512 * 1024) File.WriteAllBytes(file, bytes);
+                    try
+                    {
+                        var bytes = await Net.GetBytesAsync(url, System.Threading.CancellationToken.None, 15);
+                        if (bytes.Length < 100 || bytes.Length > 512 * 1024 || !LooksLikeImage(bytes)) continue;
+                        File.WriteAllBytes(file, bytes);
+                        break;
+                    }
+                    catch { /* 404 / offline — następny adres */ }
                 }
             }
-            catch { /* offline — użyj starej kopii lub monogramu */ }
             if (!File.Exists(file)) return null;
             try
             {
@@ -94,6 +102,13 @@ namespace AppInstaller.UI
                 return bmp;
             }
             catch { return null; }
+        }
+    
+        static bool LooksLikeImage(byte[] b)
+        {
+            // PNG, ICO, JPEG, GIF, WebP(RIFF) — odrzuca strony HTML zwracane zamiast 404
+            return (b[0] == 0x89 && b[1] == 0x50) || (b[0] == 0 && b[1] == 0 && b[2] == 1) ||
+                   (b[0] == 0xFF && b[1] == 0xD8) || (b[0] == 0x47 && b[1] == 0x49) || (b[0] == 0x52 && b[1] == 0x49);
         }
     }
 }

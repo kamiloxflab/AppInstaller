@@ -45,13 +45,29 @@ namespace AppInstaller.Core
             return Core != null && Core.Any(c => string.Equals(c, a.Id, System.StringComparison.OrdinalIgnoreCase));
         }
 
-        public string IconUrl(AppDef a)
+        /// <summary>
+        /// Adresy ikony w kolejności prób:
+        ///  1) własna ikona z repo: catalog/icons/&lt;id&gt;.png (publikowana na stronie jako icons/&lt;id&gt;.png),
+        ///  2) wpisy z "icons" (pełny URL, "@domena" przez iconService lub ścieżka względna),
+        ///  3) pojedyncze "icon" (zgodność wsteczna).
+        /// </summary>
+        public List<string> IconUrls(AppDef a)
         {
-            if (string.IsNullOrEmpty(a.Icon)) return null;
-            if (a.Icon.StartsWith("@") && !string.IsNullOrEmpty(IconService))
-                return string.Format(IconService, a.Icon.Substring(1));
-            if (a.Icon.StartsWith("http://") || a.Icon.StartsWith("https://")) return a.Icon;
-            return Config.BaseUrl + a.Icon.TrimStart('/');
+            var list = new List<string>();
+            if (!Config.BaseUrl.Contains("TWOJ-LOGIN")) list.Add(Config.BaseUrl + "icons/" + a.Id + ".png");
+            var entries = new List<string>();
+            if (a.Icons != null) entries.AddRange(a.Icons);
+            if (!string.IsNullOrEmpty(a.Icon)) entries.Add(a.Icon);
+            foreach (var e in entries)
+            {
+                if (string.IsNullOrWhiteSpace(e)) continue;
+                string url;
+                if (e.StartsWith("@")) { if (string.IsNullOrEmpty(IconService)) continue; url = string.Format(IconService, e.Substring(1)); }
+                else if (e.StartsWith("http://") || e.StartsWith("https://")) url = e;
+                else url = Config.BaseUrl + e.TrimStart('/');
+                if (!list.Contains(url)) list.Add(url);
+            }
+            return list;
         }
     }
 
@@ -78,6 +94,8 @@ namespace AppInstaller.Core
         [DataMember(Name = "category")] public string Category { get; set; }
         /// <summary>"@domena.pl" (usługa ikon), pełny URL lub ścieżka względna do BaseUrl (np. icons/x.png).</summary>
         [DataMember(Name = "icon")] public string Icon { get; set; }
+        /// <summary>Kilka źródeł ikony — używane jest pierwsze, które działa.</summary>
+        [DataMember(Name = "icons")] public List<string> Icons { get; set; }
         [DataMember(Name = "desc")] public Dictionary<string, string> Desc { get; set; }
         [DataMember(Name = "homepage")] public string Homepage { get; set; }
         /// <summary>Regex dopasowany do DisplayName w kluczach Uninstall — tylko do oznaczenia "Zainstalowano".</summary>
@@ -109,6 +127,11 @@ namespace AppInstaller.Core
         /// <summary>x86 / x64 / arm64 — wymuszenie architektury (winget --architecture, choco --x86).</summary>
         [DataMember(Name = "arch")] public string Arch { get; set; }
         [DataMember(Name = "extra")] public string Extra { get; set; }
+        /// <summary>
+        /// Instalacja jako zalogowany użytkownik bez uprawnień administratora (np. Spotify odmawia instalacji "jako admin").
+        /// Uruchamiane przez jednorazowe zadanie Harmonogramu z poziomem "Limited".
+        /// </summary>
+        [DataMember(Name = "asUser")] public bool AsUser { get; set; }
 
         // wspólne dla źródeł bezpośrednich
         /// <summary>exe | msi (domyślnie z rozszerzenia pliku).</summary>

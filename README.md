@@ -15,7 +15,7 @@ Instalator aplikacji w stylu Ninite: **jeden plik `AppInstaller.exe` (~0,5 MB)**
 | Kilka źródeł z fallbackiem | Kolejność z katalogu, np. strona wydawcy → winget → Chocolatey; winget/choco wykrywane i instalowane dopiero gdy potrzebne |
 | Ikona i opis | `icon` + `desc` (PL/EN) dla każdej aplikacji |
 | Wariant webowy jak Ninite | `web/index.html` na GitHub Pages dokleja wybór do exe |
-| Domyślne pakiety bez możliwości wyłączenia | `core` w katalogu: VC++ AIO (abbodi1406), .NET Desktop Runtime 8/9/10 x64+x86 |
+| Domyślne pakiety bez możliwości wyłączenia | `core` w katalogu: VC++ AIO (abbodi1406), .NET Desktop Runtime 8/9/10 x64+x86, Edge WebView2 Runtime, DirectX 9.0c |
 | Łatwa modyfikacja | Cały katalog w `catalog/apps.json`; teksty UI w `Core/Loc.cs`; adres strony w `Core/Config.cs` |
 | PL/EN, ciemny/jasny | Przełączniki w nagłówku (aplikacja i strona), domyślnie wg systemu |
 
@@ -96,9 +96,20 @@ Typy źródeł:
 | `winget` | `id`, `arch`, `extra` | winget instalowany automatycznie, jeśli go brak (również LTSC) |
 | `choco` | `id`, `arch`, `extra` | Chocolatey instalowany automatycznie, jeśli go brak |
 
+Dla `winget`: `"asUser": true` = instalacja dla zalogowanego użytkownika bez uprawnień administratora.
+
 Wspólne dla źródeł bezpośrednich: `args`, `installer` (`exe`/`msi`), `signer` (wymagany podpis Authenticode z tym wydawcą), `okCodes`.
 
 `icon`: `@domena` (usługa ikon z `iconService`), pełny URL lub ścieżka względna do strony (np. `icons/app.png` z katalogu `catalog/icons`).
+
+### Ikony
+
+Kolejność prób: `catalog/icons/<id>.png` z repozytorium → adresy z pola `icons` (`@domena` = favicon przez `iconService`) → monogram.
+Żeby ikony były pewne i szybkie, uruchom raz `tools\Get-Icons.ps1` — zapisze je do `catalog/icons`. Złą ikonę podmień własnym PNG o tej samej nazwie i zrób push.
+
+### Instalacja jako zwykły użytkownik
+
+Źródło winget z `"asUser": true` (Spotify, TIDAL) jest uruchamiane przez jednorazowe zadanie Harmonogramu na poziomie „Limited”, bo te instalatory odmawiają pracy z uprawnieniami administratora. Program instaluje się dla zalogowanego użytkownika.
 
 ## Bezpieczeństwo — w skrócie
 

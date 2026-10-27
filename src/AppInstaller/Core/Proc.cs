@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,6 +73,43 @@ namespace AppInstaller.Core
             var enc = Convert.ToBase64String(Encoding.Unicode.GetBytes(prolog + script));
             var ps = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\powershell.exe");
             return RunAsync(ps, "-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand " + enc, ct, timeout ?? TimeSpan.FromMinutes(15));
+        }
+
+        /// <summary>
+        /// Uruchamia program jako zalogowany użytkownik BEZ uprawnień administratora (jednorazowe zadanie Harmonogramu,
+        /// poziom "Limited") i czeka na wynik. Potrzebne dla instalatorów, które odmawiają pracy "jako administrator" (Spotify).
+        /// </summary>
+        public static async Task<int> RunAsUserAsync(string file, string args, CancellationToken ct, TimeSpan? timeout = null)
+        {
+            Func<string, string> q = s => "'" + (s ?? "").Replace("'", "''") + "'";
+            var minutes = (int)(timeout ?? Config.InstallerTimeout).TotalMinutes;
+            var script = @"
+$name = 'AppInstaller-' + [guid]::NewGuid().ToString('N')
+$user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+if ($user -eq 'NT AUTHORITY\SYSTEM') { Write-Output 'EXIT=SYSTEM'; exit 0 }
+$a = New-ScheduledTaskAction -Execute " + q(file) + @" -Argument " + q(string.IsNullOrEmpty(args) ? " " : args) + @"
+$p = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
+$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes " + minutes + @")
+Register-ScheduledTask -TaskName $name -Action $a -Principal $p -Settings $s -Force | Out-Null
+try {
+    Start-ScheduledTask -TaskName $name
+    $deadline = (Get-Date).AddMinutes(" + minutes + @")
+    do {
+        Start-Sleep -Seconds 2
+        $i = Get-ScheduledTaskInfo -TaskName $name
+    } while (($i.LastTaskResult -eq 267009 -or $i.LastTaskResult -eq 267011) -and (Get-Date) -lt $deadline)
+    Write-Output ('EXIT=' + $i.LastTaskResult)
+} finally {
+    Unregister-ScheduledTask -TaskName $name -Confirm:$false -ErrorAction SilentlyContinue
+}";
+            var r = await PowerShellAsync(script, ct, TimeSpan.FromMinutes(minutes + 2)).ConfigureAwait(false);
+            var line = (r.Output ?? "").Split('\n').Select(l => l.Trim()).LastOrDefault(l => l.StartsWith("EXIT="));
+            if (line == null) throw new Exception("Run-as-user failed: " + (r.Output ?? "").Trim());
+            var val = line.Substring(5);
+            if (val == "SYSTEM") throw new Exception("Cannot install for a user when running as SYSTEM");
+            long code;
+            if (!long.TryParse(val, out code)) throw new Exception("Run-as-user: bad result " + val);
+            return unchecked((int)(uint)code);   // LastTaskResult to UInt32 — zachowaj kody ujemne (winget 0x8A15...)
         }
 
         public static string Quote(string s)

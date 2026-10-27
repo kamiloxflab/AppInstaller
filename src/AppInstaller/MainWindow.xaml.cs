@@ -70,7 +70,7 @@ namespace AppInstaller
                 return;
             }
 
-            _items = _catalog.Apps.Select(a => new AppItem(a, _catalog.IsCore(a), _catalog.IconUrl(a))).ToList();
+            _items = _catalog.Apps.Select(a => new AppItem(a, _catalog.IsCore(a), _catalog.IconUrls(a))).ToList();
             LoadingText.Visibility = Visibility.Collapsed;
             CatalogInfo.Text = Loc.T("Catalog_" + _catalog.Origin) + "\nv" + Config.AppVersion.ToString(3);
             BuildCategories();
@@ -114,7 +114,7 @@ namespace AppInstaller
                 var tasks = _items.Select(async it =>
                 {
                     await gate.WaitAsync();
-                    try { it.Icon = await IconCache.GetAsync(it.App.Id, it.IconUrl); }
+                    try { it.Icon = await IconCache.GetAsync(it.App.Id, it.IconUrls); }
                     finally { gate.Release(); }
                 });
                 await Task.WhenAll(tasks);

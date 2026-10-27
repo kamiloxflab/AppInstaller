@@ -39,6 +39,7 @@ namespace AppInstaller.Core
             { "St_DownloadingNoSize", new[] { "Pobieranie…",                                          "Downloading…" } },
             { "St_Waiting",         new[] { "Pobrano · czeka na instalację",                          "Downloaded · waiting to install" } },
             { "St_Installing",      new[] { "Instalowanie ({0})…",                                    "Installing ({0})…" } },
+            { "St_InstallingUser",  new[] { "Instalowanie dla zalogowanego użytkownika (winget)…",    "Installing for the signed-in user (winget)…" } },
             { "St_Fallback",        new[] { "{0} — błąd, próbuję: {1}…",                              "{0} failed, trying {1}…" } },
             { "St_Done",            new[] { "Zainstalowano ({0})",                                    "Installed ({0})" } },
             { "St_Failed",          new[] { "Błąd: {0}",                                              "Failed: {0}" } },
