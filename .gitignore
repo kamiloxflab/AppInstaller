@@ -1,0 +1,8 @@
+bin/
+obj/
+out/
+site/
+*.user
+.vs/
+# klucz prywatny — NIGDY do repozytorium
+keys/private.xml

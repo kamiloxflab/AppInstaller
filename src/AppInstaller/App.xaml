@@ -1,0 +1,21 @@
+<Application x:Class="AppInstaller.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- [0] kolory: podmieniane przez ThemeManager (Light/Dark) -->
+                <ResourceDictionary Source="Themes/Light.xaml"/>
+                <!-- [1] style kontrolek -->
+                <ResourceDictionary Source="Themes/Controls.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- domyślne wartości nadpisywane przez ThemeManager -->
+            <SolidColorBrush x:Key="AccentBrush" Color="#0067C0"/>
+            <SolidColorBrush x:Key="AccentHoverBrush" Color="#E60067C0"/>
+            <SolidColorBrush x:Key="AccentPressedBrush" Color="#CC0067C0"/>
+            <SolidColorBrush x:Key="AccentSubtleBrush" Color="#260067C0"/>
+            <SolidColorBrush x:Key="OnAccentBrush" Color="White"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

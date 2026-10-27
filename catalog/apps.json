@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "updated": "2026-10-27",
+  "iconService": "https://www.google.com/s2/favicons?sz=64&domain={0}",
+
+  "core": [
+    "vcredist-aio",
+    "dotnet-desktop-8-x64", "dotnet-desktop-8-x86",
+    "dotnet-desktop-9-x64", "dotnet-desktop-9-x86",
+    "dotnet-desktop-10-x64", "dotnet-desktop-10-x86"
+  ],
+
+  "categories": [
+    { "id": "runtime",   "glyph": "", "name": { "pl": "Środowiska uruchomieniowe", "en": "Runtimes" } },
+    { "id": "browsers",  "glyph": "", "name": { "pl": "Przeglądarki",  "en": "Browsers" } },
+    { "id": "messaging", "glyph": "", "name": { "pl": "Komunikatory",  "en": "Messaging" } },
+    { "id": "media",     "glyph": "", "name": { "pl": "Multimedia",    "en": "Media" } },
+    { "id": "office",    "glyph": "", "name": { "pl": "Biuro i PDF",   "en": "Office & PDF" } },
+    { "id": "utilities", "glyph": "", "name": { "pl": "Narzędzia",     "en": "Utilities" } },
+    { "id": "security",  "glyph": "", "name": { "pl": "Bezpieczeństwo i zdalny dostęp", "en": "Security & remote" } },
+    { "id": "dev",       "glyph": "", "name": { "pl": "Programowanie", "en": "Development" } },
+    { "id": "gaming",    "glyph": "", "name": { "pl": "Gry",           "en": "Gaming" } }
+  ],
+
+  "apps": [
+    {
+      "id": "vcredist-aio", "name": "Visual C++ Redistributable AIO", "category": "runtime", "icon": "@visualstudio.microsoft.com",
+      "desc": { "pl": "Wszystkie biblioteki Visual C++ 2005–2022 (x86/x64) w jednym pakiecie od abbodi1406.", "en": "All Visual C++ 2005–2022 runtimes (x86/x64) in one package by abbodi1406." },
+      "homepage": "https://github.com/abbodi1406/vcredist", "detect": "^Microsoft Visual C\\+\\+ 20(15|17|19|22).*x64",
+      "sources": [
+        { "type": "github", "repo": "abbodi1406/vcredist", "asset": "^VisualCppRedist_AIO_x86_x64\\.exe$", "args": "/ai /gm2" },
+        { "type": "winget", "id": "abbodi1406.vcredist" },
+        { "type": "choco", "id": "vcredist-all" }
+      ]
+    },
+    {
+      "id": "dotnet-desktop-8-x64", "name": ".NET Desktop Runtime 8 (x64)", "category": "runtime", "icon": "@dot.net",
+      "desc": { "pl": "Środowisko .NET 8 LTS dla aplikacji WPF i WinForms, 64-bit.", "en": ".NET 8 LTS runtime for WPF and WinForms apps, 64-bit." },
+      "detect": "Windows Desktop Runtime - 8\\..*\\(x64\\)",
+      "sources": [
+        { "type": "dotnet", "channel": "8.0", "product": "windowsdesktop", "rid": "win-x64", "args": "/install /quiet /norestart", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.DotNet.DesktopRuntime.8", "arch": "x64" },
+        { "type": "choco", "id": "dotnet-8.0-desktopruntime" }
+      ]
+    },
+    {
+      "id": "dotnet-desktop-8-x86", "name": ".NET Desktop Runtime 8 (x86)", "category": "runtime", "icon": "@dot.net",
+      "desc": { "pl": "Środowisko .NET 8 LTS dla aplikacji 32-bitowych.", "en": ".NET 8 LTS runtime for 32-bit apps." },
+      "detect": "Windows Desktop Runtime - 8\\..*\\(x86\\)",
+      "sources": [
+        { "type": "dotnet", "channel": "8.0", "product": "windowsdesktop", "rid": "win-x86", "args": "/install /quiet /norestart", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.DotNet.DesktopRuntime.8", "arch": "x86" },
+        { "type": "choco", "id": "dotnet-8.0-desktopruntime", "arch": "x86" }
+      ]
+    },
+    {
+      "id": "dotnet-desktop-9-x64", "name": ".NET Desktop Runtime 9 (x64)", "category": "runtime", "icon": "@dot.net",
+      "desc": { "pl": "Środowisko .NET 9 dla aplikacji WPF i WinForms, 64-bit.", "en": ".NET 9 runtime for WPF and WinForms apps, 64-bit." },
+      "detect": "Windows Desktop Runtime - 9\\..*\\(x64\\)",
+      "sources": [
+        { "type": "dotnet", "channel": "9.0", "product": "windowsdesktop", "rid": "win-x64", "args": "/install /quiet /norestart", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.DotNet.DesktopRuntime.9", "arch": "x64" },
+        { "type": "choco", "id": "dotnet-9.0-desktopruntime" }
+      ]
+    },
+    {
+      "id": "dotnet-desktop-9-x86", "name": ".NET Desktop Runtime 9 (x86)", "category": "runtime", "icon": "@dot.net",
+      "desc": { "pl": "Środowisko .NET 9 dla aplikacji 32-bitowych.", "en": ".NET 9 runtime for 32-bit apps." },
+      "detect": "Windows Desktop Runtime - 9\\..*\\(x86\\)",
+      "sources": [
+        { "type": "dotnet", "channel": "9.0", "product": "windowsdesktop", "rid": "win-x86", "args": "/install /quiet /norestart", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.DotNet.DesktopRuntime.9", "arch": "x86" },
+        { "type": "choco", "id": "dotnet-9.0-desktopruntime", "arch": "x86" }
+      ]
+    },
+    {
+      "id": "dotnet-desktop-10-x64", "name": ".NET Desktop Runtime 10 (x64)", "category": "runtime", "icon": "@dot.net",
+      "desc": { "pl": "Środowisko .NET 10 LTS dla aplikacji WPF i WinForms, 64-bit.", "en": ".NET 10 LTS runtime for WPF and WinForms apps, 64-bit." },
+      "detect": "Windows Desktop Runtime - 10\\..*\\(x64\\)",
+      "sources": [
+        { "type": "dotnet", "channel": "10.0", "product": "windowsdesktop", "rid": "win-x64", "args": "/install /quiet /norestart", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.DotNet.DesktopRuntime.10", "arch": "x64" },
+        { "type": "choco", "id": "dotnet-10.0-desktopruntime" }
+      ]
+    },
+    {
+      "id": "dotnet-desktop-10-x86", "name": ".NET Desktop Runtime 10 (x86)", "category": "runtime", "icon": "@dot.net",
+      "desc": { "pl": "Środowisko .NET 10 LTS dla aplikacji 32-bitowych.", "en": ".NET 10 LTS runtime for 32-bit apps." },
+      "detect": "Windows Desktop Runtime - 10\\..*\\(x86\\)",
+      "sources": [
+        { "type": "dotnet", "channel": "10.0", "product": "windowsdesktop", "rid": "win-x86", "args": "/install /quiet /norestart", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.DotNet.DesktopRuntime.10", "arch": "x86" },
+        { "type": "choco", "id": "dotnet-10.0-desktopruntime", "arch": "x86" }
+      ]
+    },
+    {
+      "id": "java-temurin-21", "name": "Java 21 (Eclipse Temurin JRE)", "category": "runtime", "icon": "@adoptium.net",
+      "desc": { "pl": "Otwarte środowisko Java 21 LTS — do programów wymagających Javy.", "en": "Open Java 21 LTS runtime for programs that need Java." },
+      "detect": "^Eclipse Temurin JRE.*21",
+      "sources": [
+        { "type": "url", "url": "https://api.adoptium.net/v3/installer/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse", "installer": "msi", "fileName": "temurin21-jre-x64.msi", "args": "ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome" },
+        { "type": "winget", "id": "EclipseAdoptium.Temurin.21.JRE" },
+        { "type": "choco", "id": "temurin21jre" }
+      ]
+    },
+
+    {
+      "id": "firefox", "name": "Mozilla Firefox", "category": "browsers", "icon": "@mozilla.org",
+      "desc": { "pl": "Szybka, prywatna przeglądarka z rozszerzeniami i synchronizacją.", "en": "Fast, private browser with extensions and sync." },
+      "detect": "^Mozilla Firefox",
+      "sources": [
+        { "type": "url", "url": "https://download.mozilla.org/?product=firefox-latest-ssl&os=win64&lang=pl", "fileName": "FirefoxSetup.exe", "args": "/S /PreventRebootRequired=true", "signer": "Mozilla Corporation" },
+        { "type": "winget", "id": "Mozilla.Firefox" },
+        { "type": "choco", "id": "firefox" }
+      ]
+    },
+    {
+      "id": "chrome", "name": "Google Chrome", "category": "browsers", "icon": "@google.com",
+      "desc": { "pl": "Najpopularniejsza przeglądarka — wersja Enterprise (MSI) dla wszystkich użytkowników.", "en": "The most popular browser — Enterprise MSI for all users." },
+      "detect": "^Google Chrome$",
+      "sources": [
+        { "type": "url", "url": "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi", "installer": "msi", "fileName": "GoogleChromeEnterprise64.msi", "signer": "Google LLC" },
+        { "type": "winget", "id": "Google.Chrome" },
+        { "type": "choco", "id": "googlechrome" }
+      ]
+    },
+    {
+      "id": "brave", "name": "Brave", "category": "browsers", "icon": "@brave.com",
+      "desc": { "pl": "Przeglądarka oparta na Chromium z wbudowanym blokowaniem reklam.", "en": "Chromium-based browser with a built-in ad blocker." },
+      "detect": "^Brave",
+      "sources": [ { "type": "winget", "id": "Brave.Brave" }, { "type": "choco", "id": "brave" } ]
+    },
+    {
+      "id": "waterfox", "name": "Waterfox", "category": "browsers", "icon": "@waterfox.net",
+      "desc": { "pl": "Niezależna przeglądarka oparta na Firefoksie, nastawiona na prywatność.", "en": "Independent Firefox-based browser focused on privacy." },
+      "detect": "^Waterfox",
+      "sources": [ { "type": "winget", "id": "Waterfox.Waterfox" }, { "type": "choco", "id": "waterfox" } ]
+    },
+
+    {
+      "id": "thunderbird", "name": "Mozilla Thunderbird", "category": "messaging", "icon": "@thunderbird.net",
+      "desc": { "pl": "Klient poczty e-mail i kalendarza.", "en": "Email and calendar client." },
+      "detect": "^Mozilla Thunderbird",
+      "sources": [
+        { "type": "url", "url": "https://download.mozilla.org/?product=thunderbird-latest-ssl&os=win64&lang=pl", "fileName": "ThunderbirdSetup.exe", "args": "/S", "signer": "Mozilla Corporation" },
+        { "type": "winget", "id": "Mozilla.Thunderbird" },
+        { "type": "choco", "id": "thunderbird" }
+      ]
+    },
+    {
+      "id": "discord", "name": "Discord", "category": "messaging", "icon": "@discord.com",
+      "desc": { "pl": "Czat głosowy, wideo i tekstowy dla społeczności i graczy.", "en": "Voice, video and text chat for communities and gamers." },
+      "detect": "^Discord",
+      "sources": [ { "type": "winget", "id": "Discord.Discord" }, { "type": "choco", "id": "discord" } ]
+    },
+    {
+      "id": "telegram", "name": "Telegram Desktop", "category": "messaging", "icon": "@telegram.org",
+      "desc": { "pl": "Szybki komunikator z synchronizacją w chmurze.", "en": "Fast messenger with cloud sync." },
+      "detect": "^Telegram Desktop",
+      "sources": [ { "type": "winget", "id": "Telegram.TelegramDesktop" }, { "type": "choco", "id": "telegram" } ]
+    },
+    {
+      "id": "signal", "name": "Signal", "category": "messaging", "icon": "@signal.org",
+      "desc": { "pl": "Komunikator z szyfrowaniem end-to-end.", "en": "End-to-end encrypted messenger." },
+      "detect": "^Signal",
+      "sources": [ { "type": "winget", "id": "OpenWhisperSystems.Signal" }, { "type": "choco", "id": "signal" } ]
+    },
+    {
+      "id": "zoom", "name": "Zoom Workplace", "category": "messaging", "icon": "@zoom.us",
+      "desc": { "pl": "Wideokonferencje i spotkania online.", "en": "Video meetings and webinars." },
+      "detect": "^Zoom",
+      "sources": [
+        { "type": "url", "url": "https://zoom.us/client/latest/ZoomInstallerFull.msi?archType=x64", "installer": "msi", "fileName": "ZoomInstallerFull.msi", "args": "ZoomAutoUpdate=1" },
+        { "type": "winget", "id": "Zoom.Zoom" },
+        { "type": "choco", "id": "zoom" }
+      ]
+    },
+
+    {
+      "id": "vlc", "name": "VLC media player", "category": "media", "icon": "@videolan.org",
+      "desc": { "pl": "Odtwarza praktycznie każdy format audio i wideo.", "en": "Plays practically any audio and video format." },
+      "detect": "^VLC media player",
+      "sources": [
+        { "type": "ps", "fileName": "vlc-win64.exe", "args": "/L=1045 /S",
+          "script": "$h=(Invoke-WebRequest 'https://www.videolan.org/vlc/download-windows.html' -UseBasicParsing).Content; if($h -match '//get\\.videolan\\.org/vlc/[\\d\\.]+/win64/vlc-[\\d\\.]+-win64\\.exe'){ 'https:' + $matches[0] } else { exit 1 }" },
+        { "type": "winget", "id": "VideoLAN.VLC" },
+        { "type": "choco", "id": "vlc" }
+      ]
+    },
+    {
+      "id": "obs", "name": "OBS Studio", "category": "media", "icon": "@obsproject.com",
+      "desc": { "pl": "Nagrywanie ekranu i streaming na żywo.", "en": "Screen recording and live streaming." },
+      "detect": "^OBS Studio",
+      "sources": [
+        { "type": "github", "repo": "obsproject/obs-studio", "asset": "^OBS-Studio-.*-Windows(-x64)?-Installer\\.exe$", "args": "/S" },
+        { "type": "winget", "id": "OBSProject.OBSStudio" },
+        { "type": "choco", "id": "obs-studio" }
+      ]
+    },
+    {
+      "id": "audacity", "name": "Audacity", "category": "media", "icon": "@audacityteam.org",
+      "desc": { "pl": "Nagrywanie i edycja dźwięku.", "en": "Audio recording and editing." },
+      "detect": "^Audacity",
+      "sources": [
+        { "type": "github", "repo": "audacity/audacity", "asset": "^audacity-win-[\\d\\.]+-64bit\\.exe$", "args": "/VERYSILENT /NORESTART" },
+        { "type": "winget", "id": "Audacity.Audacity" },
+        { "type": "choco", "id": "audacity" }
+      ]
+    },
+    {
+      "id": "gimp", "name": "GIMP", "category": "media", "icon": "@gimp.org",
+      "desc": { "pl": "Zaawansowany edytor grafiki rastrowej.", "en": "Advanced raster image editor." },
+      "detect": "^GIMP",
+      "sources": [ { "type": "winget", "id": "GIMP.GIMP.3" }, { "type": "choco", "id": "gimp" } ]
+    },
+    {
+      "id": "handbrake", "name": "HandBrake", "category": "media", "icon": "@handbrake.fr",
+      "desc": { "pl": "Konwersja i kompresja filmów.", "en": "Video converter and transcoder." },
+      "detect": "^HandBrake",
+      "sources": [
+        { "type": "github", "repo": "HandBrake/HandBrake", "asset": "^HandBrake-[\\d\\.]+-x86_64-Win_GUI\\.exe$", "args": "/S" },
+        { "type": "winget", "id": "HandBrake.HandBrake" },
+        { "type": "choco", "id": "handbrake" }
+      ]
+    },
+    {
+      "id": "sharex", "name": "ShareX", "category": "media", "icon": "@getsharex.com",
+      "desc": { "pl": "Zrzuty ekranu, nagrania GIF i szybkie udostępnianie.", "en": "Screenshots, GIF recording and quick sharing." },
+      "detect": "^ShareX",
+      "sources": [
+        { "type": "github", "repo": "ShareX/ShareX", "asset": "^ShareX-[\\d\\.]+-setup\\.exe$", "args": "/VERYSILENT /NORESTART /NORUN" },
+        { "type": "winget", "id": "ShareX.ShareX" },
+        { "type": "choco", "id": "sharex" }
+      ]
+    },
+
+    {
+      "id": "libreoffice", "name": "LibreOffice", "category": "office", "icon": "@libreoffice.org",
+      "desc": { "pl": "Darmowy pakiet biurowy: dokumenty, arkusze, prezentacje.", "en": "Free office suite: documents, spreadsheets, presentations." },
+      "detect": "^LibreOffice",
+      "sources": [ { "type": "winget", "id": "TheDocumentFoundation.LibreOffice" }, { "type": "choco", "id": "libreoffice-fresh" } ]
+    },
+    {
+      "id": "sumatrapdf", "name": "SumatraPDF", "category": "office", "icon": "@sumatrapdfreader.org",
+      "desc": { "pl": "Lekka przeglądarka PDF, EPUB i komiksów.", "en": "Lightweight PDF, EPUB and comic viewer." },
+      "detect": "^SumatraPDF",
+      "sources": [ { "type": "winget", "id": "SumatraPDF.SumatraPDF", "extra": "--scope machine" }, { "type": "choco", "id": "sumatrapdf" } ]
+    },
+    {
+      "id": "acrobat-reader", "name": "Adobe Acrobat Reader", "category": "office", "icon": "@adobe.com",
+      "desc": { "pl": "Standardowa przeglądarka i podpisywanie PDF.", "en": "Standard PDF viewer with signing." },
+      "detect": "^Adobe Acrobat",
+      "sources": [ { "type": "winget", "id": "Adobe.Acrobat.Reader.64-bit" }, { "type": "choco", "id": "adobereader" } ]
+    },
+
+    {
+      "id": "7zip", "name": "7-Zip", "category": "utilities", "icon": "@7-zip.org",
+      "desc": { "pl": "Archiwizator ZIP, 7z, RAR i wielu innych formatów.", "en": "Archiver for ZIP, 7z, RAR and many more." },
+      "detect": "^7-Zip",
+      "sources": [
+        { "type": "github", "repo": "ip7z/7zip", "asset": "^7z\\d+-x64\\.exe$", "args": "/S" },
+        { "type": "ps", "fileName": "7z-x64.exe", "args": "/S",
+          "script": "$h=(Invoke-WebRequest 'https://www.7-zip.org/download.html' -UseBasicParsing).Content; if($h -match 'a/7z\\d+-x64\\.exe'){ 'https://www.7-zip.org/' + $matches[0] } else { exit 1 }" },
+        { "type": "winget", "id": "7zip.7zip" },
+        { "type": "choco", "id": "7zip" }
+      ]
+    },
+    {
+      "id": "notepadpp", "name": "Notepad++", "category": "utilities", "icon": "@notepad-plus-plus.org",
+      "desc": { "pl": "Edytor tekstu i kodu z kolorowaniem składni.", "en": "Text and code editor with syntax highlighting." },
+      "detect": "^Notepad\\+\\+",
+      "sources": [
+        { "type": "github", "repo": "notepad-plus-plus/notepad-plus-plus", "asset": "^npp\\.[\\d\\.]+\\.Installer\\.x64\\.exe$", "args": "/S" },
+        { "type": "winget", "id": "Notepad++.Notepad++" },
+        { "type": "choco", "id": "notepadplusplus" }
+      ]
+    },
+    {
+      "id": "everything", "name": "Everything", "category": "utilities", "icon": "@voidtools.com",
+      "desc": { "pl": "Błyskawiczne wyszukiwanie plików po nazwie.", "en": "Instant file search by name." },
+      "detect": "^Everything",
+      "sources": [ { "type": "winget", "id": "voidtools.Everything" }, { "type": "choco", "id": "everything" } ]
+    },
+    {
+      "id": "powertoys", "name": "Microsoft PowerToys", "category": "utilities", "icon": "@learn.microsoft.com",
+      "desc": { "pl": "Zestaw narzędzi: FancyZones, PowerRename, Color Picker i inne.", "en": "Power-user tools: FancyZones, PowerRename, Color Picker and more." },
+      "detect": "^PowerToys",
+      "sources": [
+        { "type": "github", "repo": "microsoft/PowerToys", "asset": "^PowerToysSetup-[\\d\\.]+-x64\\.exe$", "args": "/quiet /norestart", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.PowerToys" },
+        { "type": "choco", "id": "powertoys" }
+      ]
+    },
+    {
+      "id": "doublecmd", "name": "Double Commander", "category": "utilities", "icon": "@doublecmd.sourceforge.io",
+      "desc": { "pl": "Dwupanelowy menedżer plików w stylu Total Commandera.", "en": "Twin-panel file manager inspired by Total Commander." },
+      "detect": "^Double Commander",
+      "sources": [ { "type": "winget", "id": "alexx2000.DoubleCommander" }, { "type": "choco", "id": "doublecmd" } ]
+    },
+    {
+      "id": "windirstat", "name": "WinDirStat", "category": "utilities", "icon": "@windirstat.net",
+      "desc": { "pl": "Pokazuje, co zajmuje miejsce na dysku.", "en": "Shows what is using your disk space." },
+      "detect": "^WinDirStat",
+      "sources": [ { "type": "winget", "id": "WinDirStat.WinDirStat" }, { "type": "choco", "id": "windirstat" } ]
+    },
+
+    {
+      "id": "keepassxc", "name": "KeePassXC", "category": "security", "icon": "@keepassxc.org",
+      "desc": { "pl": "Menedżer haseł offline, zgodny z KeePass.", "en": "Offline password manager, KeePass compatible." },
+      "detect": "^KeePassXC",
+      "sources": [
+        { "type": "github", "repo": "keepassxreboot/keepassxc", "asset": "^KeePassXC-[\\d\\.]+-Win64\\.msi$", "installer": "msi" },
+        { "type": "winget", "id": "KeePassXCTeam.KeePassXC" },
+        { "type": "choco", "id": "keepassxc" }
+      ]
+    },
+    {
+      "id": "bitwarden", "name": "Bitwarden", "category": "security", "icon": "@bitwarden.com",
+      "desc": { "pl": "Menedżer haseł w chmurze z otwartym kodem.", "en": "Open-source cloud password manager." },
+      "detect": "^Bitwarden",
+      "sources": [ { "type": "winget", "id": "Bitwarden.Bitwarden" }, { "type": "choco", "id": "bitwarden" } ]
+    },
+    {
+      "id": "protonpass", "name": "Proton Pass", "category": "security", "icon": "@proton.me",
+      "desc": { "pl": "Szyfrowany menedżer haseł od Proton.", "en": "Encrypted password manager by Proton." },
+      "detect": "^Proton Pass",
+      "sources": [ { "type": "winget", "id": "Proton.ProtonPass" } ]
+    },
+    {
+      "id": "rustdesk", "name": "RustDesk", "category": "security", "icon": "@rustdesk.com",
+      "desc": { "pl": "Pulpit zdalny z otwartym kodem — alternatywa dla TeamViewera.", "en": "Open-source remote desktop — a TeamViewer alternative." },
+      "detect": "^RustDesk",
+      "sources": [
+        { "type": "github", "repo": "rustdesk/rustdesk", "asset": "^rustdesk-[\\d\\.]+-x86_64\\.msi$", "installer": "msi" },
+        { "type": "winget", "id": "RustDesk.RustDesk" },
+        { "type": "choco", "id": "rustdesk" }
+      ]
+    },
+    {
+      "id": "putty", "name": "PuTTY", "category": "security", "icon": "@putty.org",
+      "desc": { "pl": "Klient SSH i telnet.", "en": "SSH and telnet client." },
+      "detect": "^PuTTY",
+      "sources": [ { "type": "winget", "id": "PuTTY.PuTTY" }, { "type": "choco", "id": "putty" } ]
+    },
+    {
+      "id": "winscp", "name": "WinSCP", "category": "security", "icon": "@winscp.net",
+      "desc": { "pl": "Klient SFTP, SCP i FTP.", "en": "SFTP, SCP and FTP client." },
+      "detect": "^WinSCP",
+      "sources": [ { "type": "winget", "id": "WinSCP.WinSCP" }, { "type": "choco", "id": "winscp" } ]
+    },
+
+    {
+      "id": "vscode", "name": "Visual Studio Code", "category": "dev", "icon": "@code.visualstudio.com",
+      "desc": { "pl": "Edytor kodu od Microsoft (instalacja dla wszystkich użytkowników).", "en": "Code editor by Microsoft (system-wide install)." },
+      "detect": "^Microsoft Visual Studio Code",
+      "sources": [
+        { "type": "url", "url": "https://update.code.visualstudio.com/latest/win32-x64/stable", "fileName": "VSCodeSetup-x64.exe", "args": "/VERYSILENT /NORESTART /MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.VisualStudioCode", "extra": "--scope machine" },
+        { "type": "choco", "id": "vscode" }
+      ]
+    },
+    {
+      "id": "git", "name": "Git for Windows", "category": "dev", "icon": "@git-scm.com",
+      "desc": { "pl": "System kontroli wersji z Git Bash.", "en": "Version control with Git Bash." },
+      "detect": "^Git$|^Git version",
+      "sources": [
+        { "type": "github", "repo": "git-for-windows/git", "asset": "^Git-[\\d\\.]+-64-bit\\.exe$", "args": "/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS" },
+        { "type": "winget", "id": "Git.Git" },
+        { "type": "choco", "id": "git" }
+      ]
+    },
+    {
+      "id": "python", "name": "Python 3", "category": "dev", "icon": "@python.org",
+      "desc": { "pl": "Najnowszy Python 3 dla wszystkich użytkowników, dodany do PATH.", "en": "Latest Python 3 for all users, added to PATH." },
+      "detect": "^Python 3\\.\\d+.*\\(64-bit\\)",
+      "sources": [
+        { "type": "ps", "fileName": "python-amd64.exe", "args": "/quiet InstallAllUsers=1 PrependPath=1 Include_test=0",
+          "script": "$h=(Invoke-WebRequest 'https://www.python.org/downloads/windows/' -UseBasicParsing).Content; if($h -match 'https://www\\.python\\.org/ftp/python/(3\\.\\d+\\.\\d+)/python-3\\.\\d+\\.\\d+-amd64\\.exe'){ $matches[0] } else { exit 1 }" },
+        { "type": "winget", "id": "Python.Python.3.13" },
+        { "type": "choco", "id": "python" }
+      ]
+    },
+    {
+      "id": "nodejs", "name": "Node.js LTS", "category": "dev", "icon": "@nodejs.org",
+      "desc": { "pl": "Środowisko JavaScript — aktualna wersja LTS z npm.", "en": "JavaScript runtime — current LTS with npm." },
+      "detect": "^Node\\.js",
+      "sources": [
+        { "type": "ps", "installer": "msi", "fileName": "node-lts-x64.msi",
+          "script": "$r=Invoke-RestMethod 'https://nodejs.org/dist/index.json' | Where-Object { $_.lts } | Select-Object -First 1; 'https://nodejs.org/dist/' + $r.version + '/node-' + $r.version + '-x64.msi'" },
+        { "type": "winget", "id": "OpenJS.NodeJS.LTS" },
+        { "type": "choco", "id": "nodejs-lts" }
+      ]
+    },
+    {
+      "id": "powershell", "name": "PowerShell 7", "category": "dev", "icon": "@learn.microsoft.com",
+      "desc": { "pl": "Nowoczesny, wieloplatformowy PowerShell.", "en": "Modern cross-platform PowerShell." },
+      "detect": "^PowerShell 7",
+      "sources": [
+        { "type": "github", "repo": "PowerShell/PowerShell", "asset": "^PowerShell-[\\d\\.]+-win-x64\\.msi$", "installer": "msi", "args": "ADD_PATH=1 ENABLE_PSREMOTING=0 REGISTER_MANIFEST=1 USE_MU=1 ENABLE_MU=1", "signer": "Microsoft Corporation" },
+        { "type": "winget", "id": "Microsoft.PowerShell" },
+        { "type": "choco", "id": "powershell-core" }
+      ]
+    },
+    {
+      "id": "terminal", "name": "Windows Terminal", "category": "dev", "icon": "@learn.microsoft.com",
+      "desc": { "pl": "Terminal z kartami dla CMD, PowerShell i WSL.", "en": "Tabbed terminal for CMD, PowerShell and WSL." },
+      "detect": "",
+      "sources": [ { "type": "winget", "id": "Microsoft.WindowsTerminal" }, { "type": "choco", "id": "microsoft-windows-terminal" } ]
+    },
+
+    {
+      "id": "steam", "name": "Steam", "category": "gaming", "icon": "@steampowered.com",
+      "desc": { "pl": "Platforma gier od Valve.", "en": "Valve's gaming platform." },
+      "detect": "^Steam$",
+      "sources": [
+        { "type": "url", "url": "https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe", "fileName": "SteamSetup.exe", "args": "/S", "signer": "Valve" },
+        { "type": "winget", "id": "Valve.Steam" },
+        { "type": "choco", "id": "steam" }
+      ]
+    }
+  ],
+
+  "presets": {
+    "minimal": { "desc": { "pl": "Tylko pakiety bazowe (VC++ i .NET)", "en": "Base runtimes only (VC++ and .NET)" }, "apps": [] },
+    "biuro":   { "desc": { "pl": "Komputer biurowy", "en": "Office PC" }, "apps": [ "firefox", "chrome", "7zip", "libreoffice", "sumatrapdf", "vlc", "zoom" ] },
+    "office":  { "desc": { "pl": "Komputer biurowy (alias EN)", "en": "Office PC" }, "apps": [ "firefox", "chrome", "7zip", "libreoffice", "sumatrapdf", "vlc", "zoom" ] },
+    "dev":     { "desc": { "pl": "Stanowisko programisty", "en": "Developer workstation" }, "apps": [ "vscode", "git", "python", "nodejs", "powershell", "terminal", "notepadpp", "7zip" ] },
+    "admin":   { "desc": { "pl": "Zestaw administratora", "en": "Sysadmin toolkit" }, "apps": [ "7zip", "notepadpp", "everything", "putty", "winscp", "doublecmd", "powertoys", "keepassxc", "rustdesk", "powershell" ] },
+    "media":   { "desc": { "pl": "Multimedia i twórczość", "en": "Media and creation" }, "apps": [ "vlc", "obs", "audacity", "gimp", "handbrake", "sharex" ] }
+  }
+}
