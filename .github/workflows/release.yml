@@ -33,34 +33,48 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # MODE: tag    = push tagu v* -> build + nowe wydanie
+          #       latest = push do main, wydanie istnieje -> exe z ostatniego wydania
+          #       dev    = push do main, brak wydań -> build bez wydania, exe tylko na stronie
+          $owner, $repo = $env:GITHUB_REPOSITORY.Split('/')
+          $pagesExe = "https://$($owner.ToLower()).github.io/$repo/AppInstaller.exe"
           if ($env:GITHUB_REF -like 'refs/tags/v*') {
-            $v = $env:GITHUB_REF_NAME.TrimStart('v'); $release = $true
+            $mode = 'tag'; $v = $env:GITHUB_REF_NAME.TrimStart('v')
+            $url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/v$v/AppInstaller.exe"
           } else {
-            $tag = gh release view --json tagName -q .tagName 2>$null
-            if ($LASTEXITCODE -eq 0 -and $tag) { $v = $tag.TrimStart('v'); $release = $false }
-            else { $v = '0.0.1'; $release = $true }   # pierwsze uruchomienie bez wydań
+            $tag = $null
+            try { $tag = (gh release view --json tagName -q .tagName 2>$null) } catch { }
+            if ($tag) {
+              $mode = 'latest'; $v = $tag.Trim().TrimStart('v')
+              $url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/v$v/AppInstaller.exe"
+            } else {
+              $mode = 'dev'; $v = '0.0.1'; $url = $pagesExe
+            }
           }
+          Write-Host "Tryb: $mode, wersja: $v"
+          "MODE=$mode"       >> $env:GITHUB_ENV
           "VERSION=$v"       >> $env:GITHUB_ENV
-          "NEW_RELEASE=$release" >> $env:GITHUB_ENV
-          "RELEASE_URL=https://github.com/${{ github.repository }}/releases/download/v$v/AppInstaller.exe" >> $env:GITHUB_ENV
+          "RELEASE_URL=$url" >> $env:GITHUB_ENV
+          $global:LASTEXITCODE = 0   # 'gh release view' bez wydań zwraca 1 — to nie jest błąd
+          exit 0
 
       - name: Klucz publiczny obecny
         shell: pwsh
         run: if (-not (Test-Path keys/public.xml)) { throw 'Brak keys/public.xml — uruchom tools/New-SigningKey.ps1 i zacommituj klucz publiczny.' }
 
-      - name: Build (nowe wydanie)
-        if: env.NEW_RELEASE == 'True'
+      - name: Build
+        if: env.MODE != 'latest'
         run: dotnet build src/AppInstaller/AppInstaller.csproj -c Release -p:Version=${{ env.VERSION }} -o out
 
       - name: Pobierz exe z ostatniego wydania
-        if: env.NEW_RELEASE == 'False'
+        if: env.MODE == 'latest'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release download "v$env:VERSION" --pattern AppInstaller.exe --dir out --clobber
 
       - name: GitHub Release
-        if: env.NEW_RELEASE == 'True'
+        if: env.MODE == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
