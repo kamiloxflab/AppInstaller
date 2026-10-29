@@ -964,6 +964,27 @@
    ]
   },
   {
+   "id": "tubeflow",
+   "name": "TubeFlow",
+   "category": "media",
+   "icons": [
+    "https://github.com/kamiloxf.png"
+   ],
+   "desc": {
+    "pl": "Pobieranie wideo i audio przez yt-dlp i FFmpeg (pobierane automatycznie): playlisty, wycinanie fragmentów, pobieranie równoległe.",
+    "en": "Video and audio downloader built on yt-dlp and FFmpeg (fetched automatically): playlists, clip cutting, parallel downloads."
+   },
+   "detect": "^TubeFlow",
+   "sources": [
+    {
+     "type": "github",
+     "repo": "kamiloxf/TubeFlow",
+     "asset": "(?i)^TubeFlowSetup.*\\.exe$",
+     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
+    }
+   ]
+  },
+  {
    "id": "audacity",
    "name": "Audacity",
    "category": "media",
