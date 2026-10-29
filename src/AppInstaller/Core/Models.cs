@@ -102,6 +102,8 @@ namespace AppInstaller.Core
         [DataMember(Name = "detect")] public string Detect { get; set; }
         /// <summary>Źródła w kolejności prób (fallback).</summary>
         [DataMember(Name = "sources")] public List<SourceDef> Sources { get; set; }
+        /// <summary>Aplikacje instalowane razem z tą (przed nią), np. CapFrameX → RTSS.</summary>
+        [DataMember(Name = "requires")] public List<string> Requires { get; set; }
     }
 
     [DataContract]
@@ -135,12 +137,31 @@ namespace AppInstaller.Core
 
         // wspólne dla źródeł bezpośrednich
         /// <summary>
-        /// exe | msi (domyślnie z rozszerzenia pliku) | extract — samorozpakowujące archiwum:
+        /// exe | msi (domyślnie z rozszerzenia pliku) | zip — archiwum z instalatorem: "run" = regex nazwy pliku (szukany rekurencyjnie) |
+        /// extract — samorozpakowujące archiwum:
         /// najpierw plik z "extractArgs" ({dir} = folder docelowy), potem "run" (plik w tym folderze) z "args".
         /// </summary>
         [DataMember(Name = "installer")] public string Installer { get; set; }
         [DataMember(Name = "extractArgs")] public string ExtractArgs { get; set; }
         [DataMember(Name = "run")] public string Run { get; set; }
+
+        // installer = "portable" (ZIP): exe w archiwum, folder w Program Files, skrót na pulpicie, wydawca
+        [DataMember(Name = "exe")] public string Exe { get; set; }
+        [DataMember(Name = "installDir")] public string InstallDir { get; set; }
+        [DataMember(Name = "desktop")] public bool Desktop { get; set; }
+        [DataMember(Name = "publisher")] public string Publisher { get; set; }
+
+        /// <summary>installer = "msix": regex pliku licencji (.xml) w tym samym wydaniu GitHub (NanaZip).</summary>
+        [DataMember(Name = "licenseAsset")] public string LicenseAsset { get; set; }
+        /// <summary>
+        /// Dodatkowe pliki pobierane przed instalacją: {"inf": "https://…/settings.inf"}.
+        /// W "args" wstawiasz je jako {inf} (pełna ścieżka pobranego pliku).
+        /// </summary>
+        [DataMember(Name = "files")] public Dictionary<string, string> Files { get; set; }
+        /// <summary>Klucz z "files" z plikiem .reg importowanym po udanej instalacji (np. ustawienia Open-Shell).</summary>
+        [DataMember(Name = "postReg")] public string PostReg { get; set; }
+        /// <summary>Program restartowany po instalacji/imporcie ustawień: najpierw "-exit", potem start jako użytkownik.</summary>
+        [DataMember(Name = "postRestart")] public string PostRestart { get; set; }
         [DataMember(Name = "args")] public string Args { get; set; }
         [DataMember(Name = "fileName")] public string FileName { get; set; }
         /// <summary>Jeśli ustawione — wymagany ważny podpis Authenticode, a Subject certyfikatu musi zawierać ten tekst.</summary>

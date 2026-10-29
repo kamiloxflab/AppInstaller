@@ -15,6 +15,8 @@ namespace AppInstaller.Core
         /// <summary>"sha256:..." / "sha512:..." lub null.</summary>
         public string Hash;
         public string Version;
+        /// <summary>Adres licencji MSIX (GitHub, "licenseAsset").</summary>
+        public string LicenseUrl;
     }
 
     /// <summary>
@@ -67,12 +69,21 @@ namespace AppInstaller.Core
             var rx = new Regex(s.Asset, RegexOptions.IgnoreCase);
             var asset = (rel.Assets ?? new List<GhAsset>()).FirstOrDefault(a => rx.IsMatch(a.Name));
             if (asset == null) throw new Exception("No asset matching /" + s.Asset + "/ in " + s.Repo + " " + rel.Tag);
+            string license = null;
+            if (!string.IsNullOrEmpty(s.LicenseAsset))
+            {
+                var lrx = new Regex(s.LicenseAsset, RegexOptions.IgnoreCase);
+                var lic = rel.Assets.FirstOrDefault(a => lrx.IsMatch(a.Name));
+                if (lic == null) throw new Exception("No license asset /" + s.LicenseAsset + "/ in " + s.Repo + " " + rel.Tag);
+                license = lic.Url;
+            }
             return new ResolvedDownload
             {
                 Url = asset.Url,
                 FileName = Net.SafeFileName(asset.Name),
                 Hash = asset.Digest,          // GitHub udostępnia "sha256:..." dla zasobów wydań
-                Version = rel.Tag
+                Version = rel.Tag,
+                LicenseUrl = license
             };
         }
 
@@ -141,12 +152,20 @@ namespace AppInstaller.Core
         static async Task<ResolvedDownload> PowerShellAsync(AppDef app, SourceDef s, CancellationToken ct)
         {
             var r = await Proc.PowerShellAsync(s.Script, ct, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
-            var url = (r.Output ?? "").Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(l => l.Trim())
-                .LastOrDefault(l => l.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+            var lines = (r.Output ?? "").Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(l => l.Trim()).ToList();
+            var url = lines.LastOrDefault(l => l.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+            // skrypt może dodatkowo wypisać "sha256:<hex>" (np. Kate z pliku .sha256) albo "version:<x>"
+            var hash = lines.LastOrDefault(l => Regex.IsMatch(l, "^sha(256|384|512):[0-9a-fA-F]{64,128}$"));
+            var ver = lines.LastOrDefault(l => l.StartsWith("version:", StringComparison.OrdinalIgnoreCase));
             if (r.ExitCode != 0 || url == null)
                 throw new Exception("PS resolver failed (exit " + r.ExitCode + "): " + Trim(r.Output));
-            return new ResolvedDownload { Url = url, FileName = s.FileName ?? GuessName(app, s, url) };
+            return new ResolvedDownload
+            {
+                Url = url,
+                FileName = s.FileName ?? GuessName(app, s, url),
+                Hash = hash == null ? null : hash.ToLowerInvariant(),
+                Version = ver == null ? null : ver.Substring(8).Trim()
+            };
         }
 
         static string Trim(string s)

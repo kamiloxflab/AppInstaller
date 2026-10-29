@@ -106,12 +106,19 @@ namespace AppInstaller.Core
         {
             var result = new List<AppDef>();
             foreach (var id in cat.Core.Concat(ids))
-            {
-                var app = cat.Find(id);
-                if (app == null) { if (unknown != null) unknown.Add(id); continue; }
-                if (!result.Contains(app)) result.Add(app);
-            }
+                Add(cat, id, result, unknown, 0);
             return result;
+        }
+
+        /// <summary>Dodaje aplikację, a przed nią jej zależności ("requires"), bez duplikatów.</summary>
+        static void Add(Catalog cat, string id, List<AppDef> result, List<string> unknown, int depth)
+        {
+            var app = cat.Find(id);
+            if (app == null) { if (unknown != null) unknown.Add(id); return; }
+            if (result.Contains(app) || depth > 5) return;
+            if (app.Requires != null)
+                foreach (var dep in app.Requires) Add(cat, dep, result, unknown, depth + 1);
+            if (!result.Contains(app)) result.Add(app);
         }
 
         public static string HelpText()

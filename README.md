@@ -96,11 +96,18 @@ Typy źródeł:
 | `winget` | `id`, `arch`, `extra` | winget instalowany automatycznie, jeśli go brak (również LTSC) |
 | `choco` | `id`, `arch`, `extra` | Chocolatey instalowany automatycznie, jeśli go brak |
 
-Dla `winget`: `"asUser": true` = instalacja dla zalogowanego użytkownika bez uprawnień administratora.
+Dla `winget` i źródeł bezpośrednich (`.exe`): `"asUser": true` = instalacja dla zalogowanego użytkownika bez uprawnień administratora (Spotify, Discord, Signal, TIDAL).
 
 Wspólne dla źródeł bezpośrednich: `args`, `installer` (`exe`/`msi`/`extract`), `signer` (wymagany podpis Authenticode z tym wydawcą), `okCodes`.
 
 - `"args": "auto"` — program rozpoznaje typ instalatora (Inno Setup, NSIS, WiX Burn, Squirrel, Advanced Installer, InstallShield) i sam dobiera cichy przełącznik; nieznany typ = przejście do następnego źródła, bez otwierania kreatora.
+- `"installer": "portable"` — aplikacja w ZIP lub pojedynczy exe (np. TubeFlow): rozpakowanie do `Program Files\<installDir>`, skrót w Menu Start (i na pulpicie przy `"desktop": true`), wpis w „Aplikacje zainstalowane” z odinstalowaniem. Pola: `exe` (plik w archiwum), `installDir`, `publisher`. Działająca stara wersja jest zamykana i podmieniana.
+- `"installer": "zip"` — ZIP z instalatorem w środku (CapFrameX, RTSS): `run` = regex nazwy pliku szukanego w archiwum, uruchamianego z `args`.
+- `"requires": ["rtss"]` (na poziomie aplikacji) — zależności instalowane przed nią i zaznaczane automatycznie w programie i w generatorze.
+- `"installer": "msix"` — pakiet MSIX/MSIXBundle z GitHub (NanaZip): `Add-AppxProvisionedPackage` dla wszystkich użytkowników + rejestracja dla bieżącego; `licenseAsset` = regex pliku licencji `.xml` z tego samego wydania.
+- `"files": {"inf": "https://…/settings.inf"}` — dodatkowe pliki pobierane przed instalacją; w `args` wstawiasz `{inf}` (np. FlexiPDF `/Inf="{inf}"`).
+- `"postReg": "reg"` — po udanej instalacji importuje plik `.reg` z `files` (ustawienia Open-Shell); `"postRestart": "%ProgramFiles%\\…\\Program.exe"` — zamyka program (`-exit`) i uruchamia go ponownie jako użytkownik.
+- Skrypt `ps` może oprócz adresu wypisać `sha256:<hex>` (weryfikacja pliku) i `version:<x>`.
 - `"installer": "extract"` — samorozpakowujące archiwum: najpierw plik z `extractArgs` (`{dir}` = folder docelowy), potem `run` z `args`. Tak działa DirectX offline: `/Q /C /T:"{dir}"` → `DXSETUP.exe /silent`.
 
 `icon`: `@domena` (usługa ikon z `iconService`), pełny URL lub ścieżka względna do strony (np. `icons/app.png` z katalogu `catalog/icons`).

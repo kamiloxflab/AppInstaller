@@ -396,8 +396,14 @@ select.mode { height: 32px; border-radius: var(--r-control); border: 1px solid v
     const c = e.target.closest(".card");
     if (c && !c.classList.contains("core")) {
       const id = c.dataset.id;
-      sel.has(id) ? sel.delete(id) : sel.add(id);
-      c.setAttribute("aria-checked", sel.has(id)); updateBar(); return;
+      if (sel.has(id)) sel.delete(id);
+      else {
+        sel.add(id);
+        // zależności ("requires"), np. CapFrameX → RTSS
+        const app = cat.apps.find(a => a.id === id);
+        (app?.requires || []).forEach(d => sel.add(d));
+      }
+      render(); return;
     }
     const k = e.target.closest(".cat");
     if (k) { catId = k.dataset.cat; render(); }

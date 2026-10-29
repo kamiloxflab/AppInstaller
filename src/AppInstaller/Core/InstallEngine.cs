@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,6 +48,9 @@ namespace AppInstaller.Core
     {
         public SourceDef Source;
         public string File;
+        public string Version;
+        /// <summary>Dodatkowe pobrane pliki: klucz z "files" (+ "license" dla MSIX) → ścieżka.</summary>
+        public Dictionary<string, string> Extras = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
     public class EngineOptions
@@ -164,10 +168,12 @@ namespace AppInstaller.Core
                         }, ct).ConfigureAwait(false);
 
                         Verify(item.App, s, rd, file);
+                        var prep = new Prepared { Source = s, File = file, Version = rd.Version };
+                        await DownloadExtrasAsync(item.App, s, rd, dir, prep, ct).ConfigureAwait(false);
                         item.State = ItemState.Waiting;
                         item.Progress = 100;
                         item.Status = Loc.T("St_Waiting");
-                        return new Prepared { Source = s, File = file };
+                        return prep;
                     }
                     catch (OperationCanceledException) { throw; }
                     catch (Exception ex)
@@ -180,6 +186,32 @@ namespace AppInstaller.Core
                 return null;
             }
             finally { gate.Release(); }
+        }
+
+        /// <summary>Licencja MSIX i pliki z "files" (konfiguracje .inf/.reg) — wyłącznie HTTPS.</summary>
+        static async Task DownloadExtrasAsync(AppDef app, SourceDef s, ResolvedDownload rd, string dir, Prepared prep, CancellationToken ct)
+        {
+            var list = new List<KeyValuePair<string, string>>();
+            if (!string.IsNullOrEmpty(rd.LicenseUrl)) list.Add(new KeyValuePair<string, string>("license", rd.LicenseUrl));
+            if (s.Files != null) list.AddRange(s.Files);
+            foreach (var kv in list)
+            {
+                if (!Regex.IsMatch(kv.Key, "^[A-Za-z0-9_]+$")) throw new Exception("Invalid file key: " + kv.Key);
+                if (!kv.Value.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) throw new Exception("Extra file must be HTTPS: " + kv.Value);
+                var ext = Path.GetExtension(new Uri(kv.Value).AbsolutePath);
+                if (string.IsNullOrEmpty(ext) || ext.Length > 6) ext = ".dat";
+                var path = Path.Combine(dir, "extra-" + kv.Key + ext);
+                await Net.DownloadAsync(kv.Value, path, null, ct).ConfigureAwait(false);
+                prep.Extras[kv.Key] = path;
+                Log.Info(app.Id + ": extra '" + kv.Key + "' ← " + kv.Value);
+            }
+        }
+
+        static string Expand(string args, Prepared prep)
+        {
+            if (string.IsNullOrEmpty(args)) return args ?? "";
+            foreach (var kv in prep.Extras) args = args.Replace("{" + kv.Key + "}", kv.Value);
+            return args;
         }
 
         static void Verify(AppDef app, SourceDef s, ResolvedDownload rd, string file)
@@ -232,7 +264,7 @@ namespace AppInstaller.Core
                 int code;
                 try
                 {
-                    if (s.IsDirect) code = await RunInstallerAsync(prepared.File, s, ct).ConfigureAwait(false);
+                    if (s.IsDirect) code = await RunInstallerAsync(item.App, prepared, s, ct).ConfigureAwait(false);
                     else if (s.Type == "winget") code = await RunWingetAsync(item, s, ct).ConfigureAwait(false);
                     else if (s.Type == "choco") code = await RunChocoAsync(item, s, ct).ConfigureAwait(false);
                     else { Log.Warn("Unknown source type " + s.Type); continue; }
@@ -250,6 +282,7 @@ namespace AppInstaller.Core
                 Log.Info(item.App.Id + ": " + label + " exit " + code + (ok ? " OK" : " FAIL"));
                 if (ok)
                 {
+                    if (s.IsDirect) await PostInstallAsync(item.App, s, prepared, ct).ConfigureAwait(false);
                     if (code == 3010 || code == 1641) item.RebootRequired = true;
                     item.State = ItemState.Done;
                     item.Progress = 100;
@@ -268,11 +301,70 @@ namespace AppInstaller.Core
             return s.IsDirect ? Loc.T("Src_Direct") : s.Type == "winget" ? "winget" : "Chocolatey";
         }
 
-        static async Task<int> RunInstallerAsync(string file, SourceDef s, CancellationToken ct)
+        /// <summary>Import ustawień (.reg) i restart programu — błąd tu nie unieważnia samej instalacji.</summary>
+        static async Task PostInstallAsync(AppDef app, SourceDef s, Prepared prep, CancellationToken ct)
         {
+            try
+            {
+                string reg;
+                if (!string.IsNullOrEmpty(s.PostReg) && prep.Extras.TryGetValue(s.PostReg, out reg))
+                {
+                    var r = await Proc.RunAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "regedit.exe"),
+                        "/S " + Proc.Quote(reg), ct, TimeSpan.FromMinutes(1), capture: false).ConfigureAwait(false);
+                    Log.Info(app.Id + ": settings imported (" + Path.GetFileName(reg) + ", exit " + r.ExitCode + ")");
+                }
+                if (!string.IsNullOrEmpty(s.PostRestart))
+                {
+                    var exe = Environment.ExpandEnvironmentVariables(s.PostRestart);
+                    if (File.Exists(exe))
+                    {
+                        await Proc.RunAsync(exe, "-exit", ct, TimeSpan.FromSeconds(30), capture: false).ConfigureAwait(false);
+                        await Task.Delay(3000, ct).ConfigureAwait(false);
+                        // explorer.exe uruchamia program bez uprawnień administratora, w sesji użytkownika
+                        System.Diagnostics.Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"), Proc.Quote(exe));
+                        Log.Info(app.Id + ": restarted " + exe);
+                    }
+                }
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex) { Log.Warn(app.Id + ": post-install step failed — " + ex.Message); }
+        }
+
+        static async Task<int> RunInstallerAsync(AppDef app, Prepared prep, SourceDef s, CancellationToken ct)
+        {
+            var file = prep.File;
+            if (s.Installer == "portable")
+                return await Task.Run(() => Portable.Install(app, s, file, prep.Version), ct).ConfigureAwait(false);
+            if (s.Installer == "msix")
+                return await InstallMsixAsync(app, prep, ct).ConfigureAwait(false);
+
             bool msi = s.Installer == "msi" || (s.Installer == null && file.EndsWith(".msi", StringComparison.OrdinalIgnoreCase));
             ProcResult r;
-            if (s.Installer == "extract")
+            if (s.Installer == "zip")
+            {
+                // np. CapFrameX: *_installer.zip → CapFrameXBootstrapper*.exe /S
+                if (string.IsNullOrEmpty(s.Run)) throw new Exception("zip installer needs 'run' (file name regex)");
+                var dir = Path.Combine(Path.GetDirectoryName(file), "unzipped");
+                if (Directory.Exists(dir)) Directory.Delete(dir, true);
+                Directory.CreateDirectory(dir);
+                Portable.Extract(file, dir);
+                var rx = new Regex(s.Run, RegexOptions.IgnoreCase);
+                var setup = Directory.GetFiles(dir, "*", SearchOption.AllDirectories)
+                    .Where(f => rx.IsMatch(Path.GetFileName(f))).OrderBy(f => f.Length).FirstOrDefault();
+                if (setup == null) throw new Exception("No file matching /" + s.Run + "/ in the archive");
+                Log.Info(app.Id + ": running " + setup.Substring(dir.Length + 1));
+                if (setup.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
+                    r = await Proc.RunAsync(Path.Combine(Environment.SystemDirectory, "msiexec.exe"),
+                        "/i " + Proc.Quote(setup) + " /qn /norestart " + Expand(s.Args, prep), ct, capture: false).ConfigureAwait(false);
+                else
+                {
+                    string sigSubject;
+                    if (Crypto.VerifyAuthenticode(setup, out sigSubject) == Crypto.SignatureState.Invalid)
+                        throw new Exception("Invalid Authenticode signature: " + Path.GetFileName(setup));
+                    r = await Proc.RunAsync(setup, Expand(s.Args, prep), ct, capture: false).ConfigureAwait(false);
+                }
+            }
+            else if (s.Installer == "extract")
             {
                 // np. DirectX: directx_Jun2010_redist.exe /Q /C /T:"<dir>"  →  <dir>\DXSETUP.exe /silent
                 if (string.IsNullOrEmpty(s.Run) || s.Run.Contains("..") || Path.IsPathRooted(s.Run))
@@ -284,17 +376,17 @@ namespace AppInstaller.Core
                 var setup = Path.Combine(dir, s.Run);
                 if (!File.Exists(setup))
                     throw new Exception("Extraction failed (exit " + x.ExitCode + "): " + s.Run + " not found");
-                r = await Proc.RunAsync(setup, s.Args ?? "", ct, capture: false).ConfigureAwait(false);
+                r = await Proc.RunAsync(setup, Expand(s.Args, prep), ct, capture: false).ConfigureAwait(false);
             }
             else if (msi)
             {
                 var log = Path.Combine(Path.GetDirectoryName(file), "msi.log");
                 r = await Proc.RunAsync(Path.Combine(Environment.SystemDirectory, "msiexec.exe"),
-                    "/i " + Proc.Quote(file) + " /qn /norestart /l*v " + Proc.Quote(log) + " " + (s.Args ?? ""), ct, capture: false).ConfigureAwait(false);
+                    "/i " + Proc.Quote(file) + " /qn /norestart /l*v " + Proc.Quote(log) + " " + Expand(s.Args, prep), ct, capture: false).ConfigureAwait(false);
             }
             else
             {
-                var args = s.Args ?? "";
+                var args = Expand(s.Args, prep);
                 if (args.Trim().StartsWith("auto", StringComparison.OrdinalIgnoreCase))
                 {
                     // "auto" lub "auto <dodatkowe argumenty>" — rozpoznaj instalator, nie zgaduj w ciemno
@@ -304,9 +396,35 @@ namespace AppInstaller.Core
                     args = det.Args + args.Trim().Substring(4);
                     Log.Info(Path.GetFileName(file) + ": detected " + det.Kind + " → " + args);
                 }
+                if (s.AsUser)
+                {
+                    // instalatory per-user (Spotify, Discord…) odmawiają pracy jako administrator
+                    Log.Info(Path.GetFileName(file) + ": running as signed-in user");
+                    return await Proc.RunAsUserAsync(file, args, ct).ConfigureAwait(false);
+                }
                 r = await Proc.RunAsync(file, args, ct, capture: false).ConfigureAwait(false);
             }
             return r.ExitCode;
+        }
+
+        /// <summary>
+        /// Pakiet MSIX/MSIXBundle (NanaZip): provisioning dla wszystkich użytkowników + rejestracja dla bieżącego.
+        /// </summary>
+        static async Task<int> InstallMsixAsync(AppDef app, Prepared prep, CancellationToken ct)
+        {
+            string lic;
+            prep.Extras.TryGetValue("license", out lic);
+            Func<string, string> q = x => "'" + x.Replace("'", "''") + "'";
+            var script =
+                "$pkg = " + q(prep.File) + "\n" +
+                (lic != null
+                    ? "Add-AppxProvisionedPackage -Online -PackagePath $pkg -LicensePath " + q(lic) + " | Out-Null\n"
+                    : "Add-AppxProvisionedPackage -Online -PackagePath $pkg -SkipLicense | Out-Null\n") +
+                "try { Add-AppxPackage -Path $pkg -ErrorAction Stop } catch { Write-Output ('Add-AppxPackage: ' + $_) }\n" +
+                "Write-Output 'MSIX-OK'";
+            var r = await Proc.PowerShellAsync(script, ct, TimeSpan.FromMinutes(10)).ConfigureAwait(false);
+            Log.Info(app.Id + ": msix → " + (r.Output ?? "").Trim());
+            return (r.Output ?? "").Contains("MSIX-OK") ? 0 : (r.ExitCode != 0 ? r.ExitCode : 1);
         }
 
         async Task<int> RunWingetAsync(InstallItem item, SourceDef s, CancellationToken ct)

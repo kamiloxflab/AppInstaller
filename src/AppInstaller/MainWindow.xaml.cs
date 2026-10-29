@@ -166,6 +166,13 @@ namespace AppInstaller
 
         void UpdateSelection()
         {
+            // zależności ("requires"): zaznaczenie CapFrameX zaznacza też RTSS
+            foreach (var it in _items.Where(i => i.IsChecked && i.App.Requires != null).ToList())
+                foreach (var dep in it.App.Requires)
+                {
+                    var d = _items.FirstOrDefault(x => string.Equals(x.App.Id, dep, StringComparison.OrdinalIgnoreCase));
+                    if (d != null && !d.IsChecked) d.IsChecked = true;
+                }
             int n = _items.Count(i => i.IsChecked && !i.IsCore);
             int core = _items.Count(i => i.IsCore);
             SelectedText.Text = Loc.T("Selected", n, core);

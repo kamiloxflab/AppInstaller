@@ -104,15 +104,15 @@
     "@visualstudio.microsoft.com"
    ],
    "desc": {
-    "pl": "Wszystkie biblioteki Visual C++ 2005–2022 (x86/x64) w jednym pakiecie od abbodi1406.",
-    "en": "All Visual C++ 2005–2022 runtimes (x86/x64) in one package by abbodi1406."
+    "pl": "Wszystkie biblioteki Visual C++ 2005–2026 (x86/x64) w jednym pakiecie od abbodi1406.",
+    "en": "All Visual C++ 2005–2026 runtimes (x86/x64) in one package by abbodi1406."
    },
-   "detect": "^Microsoft Visual C\\+\\+ 20(15|17|19|22).*x64",
+   "detect": "^Microsoft Visual C\\+\\+ (20\\d\\d|v14).*x64",
    "sources": [
     {
      "type": "github",
      "repo": "abbodi1406/vcredist",
-     "asset": "^VisualCppRedist_AIO_x86_x64\\.exe$",
+     "asset": "(?i)x86_x64\\.exe$",
      "args": "/ai /gm2"
     },
     {
@@ -461,6 +461,12 @@
    "detect": "^Microsoft Edge$",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "MicrosoftEdgeEnterpriseX64.msi",
+     "script": "$p=Invoke-RestMethod 'https://edgeupdates.microsoft.com/api/products'; $r=($p | Where-Object Product -eq 'Stable').Releases | Where-Object { $_.Platform -eq 'Windows' -and $_.Architecture -eq 'x64' } | Sort-Object { [version]$_.ProductVersion } -Descending | Select-Object -First 1; ($r.Artifacts | Where-Object ArtifactName -eq 'msi').Location",
+     "installer": "msi"
+    },
+    {
      "type": "winget",
      "id": "Microsoft.Edge"
     },
@@ -485,6 +491,13 @@
    "detect": "^Opera GX",
    "sources": [
     {
+     "type": "url",
+     "url": "https://net.geo.opera.com/opera_gx/stable/windows",
+     "fileName": "OperaGXSetup.exe",
+     "args": "/silent /allusers=1 /launchopera=0 /setdefaultbrowser=0",
+     "signer": "Opera Norway"
+    },
+    {
      "type": "winget",
      "id": "Opera.OperaGX"
     },
@@ -507,6 +520,12 @@
    },
    "detect": "^Brave",
    "sources": [
+    {
+     "type": "github",
+     "repo": "brave/brave-browser",
+     "asset": "^BraveBrowserStandaloneSilentSetup\\.exe$",
+     "signer": "Brave Software"
+    },
     {
      "type": "winget",
      "id": "Brave.Brave"
@@ -561,6 +580,12 @@
    "detect": "^eM Client",
    "sources": [
     {
+     "type": "url",
+     "url": "https://www.emclient.com/dist/latest/setup.msi",
+     "fileName": "emclient-setup.msi",
+     "installer": "msi"
+    },
+    {
      "type": "winget",
      "id": "eMClient.eMClient"
     },
@@ -583,6 +608,12 @@
    },
    "detect": "^ONLYOFFICE",
    "sources": [
+    {
+     "type": "github",
+     "repo": "ONLYOFFICE/DesktopEditors",
+     "asset": "^DesktopEditors_x64\\.exe$",
+     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-"
+    },
     {
      "type": "winget",
      "id": "ONLYOFFICE.DesktopEditors"
@@ -607,6 +638,13 @@
    "detect": "^LibreOffice",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "LibreOffice_Win_x86-64.msi",
+     "script": "$b='https://download.documentfoundation.org/libreoffice/stable/'; $h=(Invoke-WebRequest $b -UseBasicParsing).Content; $v=[regex]::Matches($h,'href=\"(\\d+\\.\\d+\\.\\d+)/\"') | ForEach-Object { [version]$_.Groups[1].Value } | Sort-Object -Descending | Select-Object -First 1; if(-not $v){ exit 1 }; $b + $v + '/win/x86_64/LibreOffice_' + $v + '_Win_x86-64.msi'",
+     "installer": "msi",
+     "args": "REGISTER_ALL_MSO_TYPES=1 ISCHECKFORPRODUCTUPDATES=0 RebootYesNo=No"
+    },
+    {
      "type": "winget",
      "id": "TheDocumentFoundation.LibreOffice"
     },
@@ -629,6 +667,12 @@
    },
    "detect": "^SumatraPDF",
    "sources": [
+    {
+     "type": "ps",
+     "fileName": "SumatraPDF-64-install.exe",
+     "script": "$h=(Invoke-WebRequest 'https://www.sumatrapdfreader.org/download-free-pdf-viewer' -UseBasicParsing).Content; if($h -match '/dl/rel/[\\d\\.]+/SumatraPDF-[\\d\\.]+-64-install\\.exe'){ 'https://www.sumatrapdfreader.org' + $matches[0] } else { exit 1 }",
+     "args": "-install -s -all-users"
+    },
     {
      "type": "winget",
      "id": "SumatraPDF.SumatraPDF",
@@ -654,6 +698,12 @@
    },
    "detect": "^Adobe Acrobat",
    "sources": [
+    {
+     "type": "ps",
+     "fileName": "AcroRdrDCx64_MUI.exe",
+     "script": "$b='https://helpx.adobe.com'; $h=(Invoke-WebRequest ($b + '/acrobat/release-note/release-notes-acrobat-reader.html') -UseBasicParsing).Content; if($h -notmatch 'href=\"(/acrobat/release-note/[^\"]+\\.html)\"[^>]*>\\s*DC '){ exit 1 }; $n=(Invoke-WebRequest ($b + $matches[1]) -UseBasicParsing).Content; if($n -notmatch 'AcroRdrDC(?:x64)?Upd(\\d{10})'){ exit 1 }; $v=$matches[1]; 'https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/' + $v + '/AcroRdrDCx64' + $v + '_MUI.exe'",
+     "args": "/sAll /rs /msi EULA_ACCEPT=YES"
+    },
     {
      "type": "winget",
      "id": "Adobe.Acrobat.Reader.64-bit"
@@ -702,7 +752,10 @@
      "type": "url",
      "url": "https://www.softmaker.net/down/flexipdf2025_64.exe",
      "fileName": "flexipdf2025_64.exe",
-     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
+     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /Inf=\"{inf}\"",
+     "files": {
+      "inf": "https://github.com/kamiloxf/w10/releases/download/1/settings.inf"
+     }
     },
     {
      "type": "winget",
@@ -755,6 +808,12 @@
    "detect": "^Slack",
    "sources": [
     {
+     "type": "url",
+     "url": "https://slack.com/ssb/download-win64-msi",
+     "fileName": "slack-standalone-x64.msi",
+     "installer": "msi"
+    },
+    {
      "type": "winget",
      "id": "SlackTechnologies.Slack"
     },
@@ -777,6 +836,13 @@
    },
    "detect": "^Discord",
    "sources": [
+    {
+     "type": "url",
+     "url": "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64",
+     "fileName": "DiscordSetup.exe",
+     "args": "-s",
+     "asUser": true
+    },
     {
      "type": "winget",
      "id": "Discord.Discord"
@@ -801,6 +867,12 @@
    "detect": "^TeamSpeak",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "TeamSpeak3-Client-win64.exe",
+     "script": "$h=(Invoke-WebRequest 'https://teamspeak.com/en/downloads/' -UseBasicParsing).Content; if($h -match 'https://files\\.teamspeak-services\\.com/releases/client/[\\d\\.]+/TeamSpeak3-Client-win64-[\\d\\.]+\\.exe'){ $matches[0] } else { exit 1 }",
+     "args": "/S"
+    },
+    {
      "type": "winget",
      "id": "TeamSpeakSystems.TeamSpeakClient"
     },
@@ -824,6 +896,13 @@
    "detect": "^Signal",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "signal-desktop-win.exe",
+     "script": "$y=(Invoke-WebRequest 'https://updates.signal.org/desktop/latest.yml' -UseBasicParsing).Content; if($y -match 'path:\\s*(signal-desktop-win-[\\d\\.]+\\.exe)'){ 'https://updates.signal.org/desktop/' + $matches[1] } else { exit 1 }",
+     "args": "/S",
+     "asUser": true
+    },
+    {
      "type": "winget",
      "id": "OpenWhisperSystems.Signal"
     },
@@ -846,6 +925,12 @@
    },
    "detect": "^Telegram Desktop",
    "sources": [
+    {
+     "type": "github",
+     "repo": "telegramdesktop/tdesktop",
+     "asset": "^tsetup-x64\\.[\\d\\.]+\\.exe$",
+     "args": "/VERYSILENT /NORESTART /SP-"
+    },
     {
      "type": "winget",
      "id": "Telegram.TelegramDesktop"
@@ -873,7 +958,7 @@
     {
      "type": "github",
      "repo": "clsid2/mpc-hc",
-     "asset": "^MPC-HC\\.[\\d\\.]+\\.x64\\.exe$",
+     "asset": "(?i)x64\\.exe$",
      "args": "/VERYSILENT /NORESTART"
     },
     {
@@ -929,6 +1014,13 @@
    "detect": "^Spotify",
    "sources": [
     {
+     "type": "url",
+     "url": "https://download.scdn.co/SpotifySetup.exe",
+     "fileName": "SpotifySetup.exe",
+     "args": "/silent",
+     "asUser": true
+    },
+    {
      "type": "winget",
      "id": "Spotify.Spotify",
      "asUser": true
@@ -952,6 +1044,13 @@
    },
    "detect": "^TIDAL",
    "sources": [
+    {
+     "type": "url",
+     "url": "https://download.tidal.com/desktop/TIDALSetup.exe",
+     "fileName": "TIDALSetup.exe",
+     "args": "--silent",
+     "asUser": true
+    },
     {
      "type": "winget",
      "id": "TIDALMusicAS.TIDAL",
@@ -1091,6 +1190,12 @@
    "detect": "^Double Commander",
    "sources": [
     {
+     "type": "github",
+     "repo": "doublecmd/doublecmd",
+     "asset": "^doublecmd-[\\d\\.]+\\.x86_64-win64\\.msi$",
+     "installer": "msi"
+    },
+    {
      "type": "winget",
      "id": "alexx2000.DoubleCommander"
     },
@@ -1114,6 +1219,12 @@
    "detect": "^Total Commander",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "tcmd-x64.exe",
+     "script": "$h=(Invoke-WebRequest 'https://www.ghisler.com/download.htm' -UseBasicParsing).Content; if($h -match 'https?://[^\"]+/tcmd\\d+x64\\.exe'){ $matches[0] -replace '^http:','https:' } else { exit 1 }",
+     "args": "/AHMGDU"
+    },
+    {
      "type": "winget",
      "id": "Ghisler.TotalCommander"
     },
@@ -1136,6 +1247,13 @@
    },
    "detect": "^NanaZip",
    "sources": [
+    {
+     "type": "github",
+     "repo": "M2Team/NanaZip",
+     "asset": "(?i)\\.msixbundle$",
+     "installer": "msix",
+     "licenseAsset": "(?i)\\.xml$"
+    },
     {
      "type": "winget",
      "id": "M2Team.NanaZip"
@@ -1163,7 +1281,12 @@
      "type": "github",
      "repo": "Open-Shell/Open-Shell-Menu",
      "asset": "^OpenShellSetup_[\\d_]+\\.exe$",
-     "args": "/qn ADDLOCAL=StartMenu"
+     "args": "/qn ADDLOCAL=StartMenu",
+     "files": {
+      "reg": "https://github.com/kamiloxf/w10/releases/download/1/OpenShellconfig.reg"
+     },
+     "postReg": "reg",
+     "postRestart": "%ProgramFiles%\\Open-Shell\\StartMenu.exe"
     },
     {
      "type": "winget",
@@ -1189,6 +1312,12 @@
    "detect": "^Revo Uninstaller",
    "sources": [
     {
+     "type": "url",
+     "url": "https://download.revouninstaller.com/download/revosetup.exe",
+     "fileName": "revosetup.exe",
+     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
+    },
+    {
      "type": "winget",
      "id": "RevoUninstaller.RevoUninstaller"
     },
@@ -1211,6 +1340,12 @@
    },
    "detect": "^Wireshark",
    "sources": [
+    {
+     "type": "url",
+     "url": "https://www.wireshark.org/download/win64/Wireshark-latest-x64.exe",
+     "fileName": "Wireshark-latest-x64.exe",
+     "args": "/S /desktopicon=no /quicklaunchicon=no"
+    },
     {
      "type": "winget",
      "id": "WiresharkFoundation.Wireshark"
@@ -1264,6 +1399,12 @@
    "detect": "^GIMP",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "gimp-setup.exe",
+     "script": "$h=(Invoke-WebRequest 'https://www.gimp.org/downloads/' -UseBasicParsing).Content; if($h -match '//download\\.gimp\\.org/gimp/v[\\d\\.]+/windows/gimp-[\\d\\.\\-]+-setup(-\\d+)?\\.exe'){ 'https:' + $matches[0] } else { exit 1 }",
+     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /ALLUSERS"
+    },
+    {
      "type": "winget",
      "id": "GIMP.GIMP.3"
     },
@@ -1310,7 +1451,7 @@
     {
      "type": "github",
      "repo": "ShareX/ShareX",
-     "asset": "^ShareX-[\\d\\.]+-setup\\.exe$",
+     "asset": "(?i)setup.*\\.exe$",
      "args": "/VERYSILENT /NORESTART /NORUN"
     },
     {
@@ -1337,6 +1478,12 @@
    "detect": "^Blender",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "blender-windows-x64.msi",
+     "script": "$h=(Invoke-WebRequest 'https://www.blender.org/download/' -UseBasicParsing).Content; if($h -match 'https://www\\.blender\\.org/download/release/Blender[\\d\\.]+/blender-[\\d\\.]+-windows-x64\\.msi'){ ($matches[0] -replace 'www\\.blender\\.org/download/release','download.blender.org/release') } else { exit 1 }",
+     "installer": "msi"
+    },
+    {
      "type": "winget",
      "id": "BlenderFoundation.Blender"
     },
@@ -1360,6 +1507,12 @@
    "detect": "^Bitwarden",
    "sources": [
     {
+     "type": "url",
+     "url": "https://vault.bitwarden.com/download/?app=desktop&platform=windows",
+     "fileName": "Bitwarden-Installer.exe",
+     "args": "/allusers /S"
+    },
+    {
      "type": "winget",
      "id": "Bitwarden.Bitwarden"
     },
@@ -1382,6 +1535,12 @@
    },
    "detect": "^Proton Pass",
    "sources": [
+    {
+     "type": "ps",
+     "fileName": "ProtonPass_Setup.exe",
+     "script": "$p=(Invoke-WebRequest 'https://releasebot.io/updates/proton/proton-pass' -UseBasicParsing).Content; if($p -notmatch 'Version (\\d+\\.\\d+\\.\\d+)'){ exit 1 }; 'version:' + $matches[1]; 'https://proton.me/download/pass/windows/ProtonPass_Setup_' + $matches[1] + '.exe'",
+     "args": "/S"
+    },
     {
      "type": "winget",
      "id": "Proton.ProtonPass"
@@ -1431,6 +1590,12 @@
    "detect": "^Malwarebytes",
    "sources": [
     {
+     "type": "url",
+     "url": "https://downloads.malwarebytes.com/file/mb-windows",
+     "fileName": "MBSetup.exe",
+     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
+    },
+    {
      "type": "winget",
      "id": "Malwarebytes.Malwarebytes"
     },
@@ -1453,6 +1618,13 @@
    },
    "detect": "^1Password",
    "sources": [
+    {
+     "type": "url",
+     "url": "https://downloads.1password.com/win/1PasswordSetup-latest.msi",
+     "fileName": "1PasswordSetup-latest.msi",
+     "installer": "msi",
+     "signer": "AgileBits"
+    },
     {
      "type": "winget",
      "id": "AgileBits.1Password"
@@ -1507,6 +1679,17 @@
    },
    "detect": "^Visual Studio Community",
    "sources": [
+    {
+     "type": "url",
+     "url": "https://aka.ms/vs/18/stable/vs_community.exe",
+     "fileName": "vs_community.exe",
+     "args": "--quiet --wait --norestart --nocache",
+     "signer": "Microsoft Corporation",
+     "okCodes": [
+      3010,
+      1641
+     ]
+    },
     {
      "type": "winget",
      "id": "Microsoft.VisualStudio.Community"
@@ -1614,6 +1797,12 @@
    "detect": "^Kate",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "kate-windows-x86_64.exe",
+     "script": "$i='https://cdn.kde.org/ci-builds/utilities/kate/master/windows/'; $h=(Invoke-WebRequest $i -UseBasicParsing).Content; $f=[regex]::Matches($h,'kate-master-(\\d+)-windows-cl-msvc2022-x86_64\\.exe(?!\\.sha256)'); if($f.Count -eq 0){ exit 1 }; $b=($f | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Maximum).Maximum; $u=$i + 'kate-master-' + $b + '-windows-cl-msvc2022-x86_64.exe'; try { $s=(Invoke-WebRequest ($u + '.sha256') -UseBasicParsing).Content.Trim(); 'sha256:' + ($s -split '\\s+')[0].ToLower() } catch { }; 'version:master-' + $b; $u",
+     "args": "/S"
+    },
+    {
      "type": "winget",
      "id": "KDE.Kate"
     },
@@ -1717,6 +1906,12 @@
    "detect": "^GOG GALAXY",
    "sources": [
     {
+     "type": "ps",
+     "fileName": "setup_galaxy.exe",
+     "script": "$j=Invoke-RestMethod 'https://remote-config.gog.com/components/webinstaller?component_version=2.0.0'; $l=$j.content.windows.downloadLink; if($l){ $l } else { exit 1 }",
+     "args": "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
+    },
+    {
      "type": "winget",
      "id": "GOG.Galaxy"
     },
@@ -1739,6 +1934,12 @@
    },
    "detect": "^EA app",
    "sources": [
+    {
+     "type": "url",
+     "url": "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe",
+     "fileName": "EAappInstaller.exe",
+     "args": "/S"
+    },
     {
      "type": "winget",
      "id": "ElectronicArts.EADesktop"
@@ -1763,6 +1964,12 @@
    "detect": "^Playnite",
    "sources": [
     {
+     "type": "github",
+     "repo": "JosefNemec/Playnite",
+     "asset": "^Playnite\\d+\\.exe$",
+     "args": "/SP- /VERYSILENT /NORESTART"
+    },
+    {
      "type": "winget",
      "id": "Playnite.Playnite"
     },
@@ -1770,6 +1977,71 @@
      "type": "choco",
      "id": "playnite"
     }
+   ]
+  },
+  {
+   "id": "rtss",
+   "name": "RivaTuner Statistics Server",
+   "category": "gaming",
+   "icons": [
+    "@guru3d.com"
+   ],
+   "desc": {
+    "pl": "Licznik FPS i nakładka na ekran w grach, ogranicznik klatek. Wymagany przez CapFrameX do nakładki.",
+    "en": "In-game FPS counter, overlay and frame limiter. Required by CapFrameX for its overlay."
+   },
+   "detect": "^RivaTuner Statistics Server",
+   "sources": [
+    {
+     "type": "ps",
+     "fileName": "RTSS.zip",
+     "script": "$h=@{ 'User-Agent'='AppInstaller'; 'Accept'='application/vnd.github.v3+json' }; $v=Invoke-RestMethod 'https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/g/Guru3D/RTSS' -Headers $h | Where-Object { $_.type -eq 'dir' } | Sort-Object { $p=$_.name -split '\\.'; [int]$p[0]*1000000 + [int]$p[1]*1000 + [int]($p[2] -replace '\\D','') } | Select-Object -Last 1; $c=Invoke-RestMethod $v.url -Headers $h; $f=$c | Where-Object { $_.name -like '*.installer.yaml' } | Select-Object -First 1; $y=(Invoke-WebRequest $f.download_url -Headers $h -UseBasicParsing).Content; if($y -notmatch 'InstallerUrl:\\s*(https://\\S+)'){ exit 1 }; 'version:' + $v.name; $matches[1].Trim()",
+     "args": "/S",
+     "installer": "zip",
+     "run": "^RTSSSetup.*\\.exe$"
+    },
+    {
+     "type": "winget",
+     "id": "Guru3D.RTSS"
+    },
+    {
+     "type": "choco",
+     "id": "rtss"
+    }
+   ]
+  },
+  {
+   "id": "capframex",
+   "name": "CapFrameX",
+   "category": "gaming",
+   "icons": [
+    "@capframex.com"
+   ],
+   "desc": {
+    "pl": "Pomiar i analiza wydajności w grach (FPS, frametime, 1% low). Instalowany razem z RTSS.",
+    "en": "Game performance capture and analysis (FPS, frametimes, 1% lows). Installed together with RTSS."
+   },
+   "detect": "^CapFrameX",
+   "sources": [
+    {
+     "type": "github",
+     "repo": "CXWorld/CapFrameX",
+     "asset": "(?i)_installer\\.zip$",
+     "args": "/S",
+     "installer": "zip",
+     "run": "CapFrameXBootstrapper.*\\.exe$"
+    },
+    {
+     "type": "winget",
+     "id": "CXWorld.CapFrameX"
+    },
+    {
+     "type": "choco",
+     "id": "capframex"
+    }
+   ],
+   "requires": [
+    "rtss"
    ]
   }
  ],
@@ -1874,7 +2146,8 @@
     "playnite",
     "discord",
     "teamspeak",
-    "operagx"
+    "operagx",
+    "capframex"
    ]
   }
  }
